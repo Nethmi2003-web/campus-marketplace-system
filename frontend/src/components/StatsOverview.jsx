@@ -1,6 +1,5 @@
 import React from "react";
 import { Calendar, Users, TrendingUp, Clock, MapPin } from "lucide-react";
-// Replaced local ui import
 import { cn } from "../lib/utils";
 
 
