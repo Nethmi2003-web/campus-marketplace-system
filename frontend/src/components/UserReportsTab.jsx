@@ -1,6 +1,5 @@
 import { cn } from '../lib/utils';
 import React from "react";
-// Replaced local ui import
 import { ArrowDownRight, ArrowUpRight, DollarSign, Package, ShoppingCart } from "lucide-react";
 
 
