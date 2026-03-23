@@ -1,8 +1,5 @@
 import React from "react";
 import { Calendar, Users, MapPin, Clock, Heart, Share2, ExternalLink } from "lucide-react";
-// Replaced local ui import
-// Replaced local ui import
-// Replaced local ui import
 import { cn } from "../lib/utils";
 import { useState } from "react";
 

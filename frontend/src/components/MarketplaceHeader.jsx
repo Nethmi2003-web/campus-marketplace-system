@@ -1,7 +1,5 @@
 import React from "react";
 import { Search, Filter, SlidersHorizontal, Sparkles } from "lucide-react";
-// Replaced local ui import
-// Replaced local ui import
 import { useState } from "react";
 import { cn } from "../lib/utils";
 
@@ -81,8 +79,8 @@ export function MarketplaceHeader({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/80 p-8 md:p-12 shadow-2xl">
+    <div className="space-y-6 w-full min-w-0">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/80 p-6 md:p-10 shadow-2xl w-full">
         <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         
@@ -122,7 +120,7 @@ export function MarketplaceHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide w-full">
         <div className="flex items-center gap-2 flex-shrink-0">
           <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">Categories:</span>

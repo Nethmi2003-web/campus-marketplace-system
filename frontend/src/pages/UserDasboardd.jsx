@@ -20,7 +20,7 @@ import MarketplaceUI from "./User/MarketplaceUI";
 // -------------------------------------------------------------
 function UserNavbar({ user }) {
   return (
-    <nav className="h-20 bg-background/95 backdrop-blur-md border-b sticky top-0 z-40 px-6 flex items-center justify-between">
+    <nav className="h-20 bg-background/95 backdrop-blur-md border-b fixed top-0 left-0 right-0 z-40 px-6 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
           <span className="text-white font-black text-xl">S</span>
@@ -146,13 +146,13 @@ export default function UserDasboardd() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       <UserNavbar user={userInfo} />
       
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0 pt-20">
         <UserSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         
-        <main className="flex-1 lg:ml-64 p-6 md:p-10 space-y-8 animate-in fade-in duration-700">
+        <main className="flex-1 min-w-0 lg:ml-64 p-4 md:p-8 lg:p-10 space-y-8 animate-in fade-in duration-700 overflow-x-hidden">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="flex flex-col gap-2">
                   <h1 className="text-3xl font-black text-primary tracking-tight">Welcome, {userInfo?.firstName || 'Student'}!</h1>
@@ -160,11 +160,13 @@ export default function UserDasboardd() {
               </div>
           </div>
 
-          <div className="flex gap-2 p-1 bg-muted/50 rounded-xl w-fit">
-            <button onClick={() => setActiveTab('overview')} className={cn("px-6 py-2 rounded-lg font-bold text-sm transition-all", activeTab === 'overview' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Overview</button>
-            <button onClick={() => setActiveTab('marketplace')} className={cn("px-6 py-2 rounded-lg font-bold text-sm transition-all", activeTab === 'marketplace' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Marketplace</button>
-            <button onClick={() => setActiveTab('analytics')} className={cn("px-6 py-2 rounded-lg font-bold text-sm transition-all", activeTab === 'analytics' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Analytics</button>
-            <button onClick={() => setActiveTab('reports')} className={cn("px-6 py-2 rounded-lg font-bold text-sm transition-all", activeTab === 'reports' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Reports</button>
+          <div className="overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="flex gap-2 p-1 bg-muted/50 rounded-xl w-max">
+              <button onClick={() => setActiveTab('overview')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'overview' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Overview</button>
+              <button onClick={() => setActiveTab('marketplace')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'marketplace' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Marketplace</button>
+              <button onClick={() => setActiveTab('analytics')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'analytics' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Analytics</button>
+              <button onClick={() => setActiveTab('reports')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'reports' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Reports</button>
+            </div>
           </div>
 
           {activeTab === 'marketplace' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><MarketplaceUI /></div>}
