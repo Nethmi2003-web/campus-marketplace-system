@@ -16,7 +16,7 @@ import MainLayout from './components/MainLayout';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         {/* Routes wrapped in the Main Layout */}
         <Route path="/" element={<MainLayout><LoginPage /></MainLayout>} />

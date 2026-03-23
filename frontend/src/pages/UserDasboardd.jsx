@@ -68,7 +68,7 @@ function UserSidebar({ activeTab, setActiveTab }) {
 
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
-    navigate("/login");
+    navigate("/");
   };
 
   const tabs = [
@@ -120,7 +120,7 @@ export default function UserDasboardd() {
   // Aggressive Session Validation
   React.useEffect(() => {
     if (!userInfo.token) {
-      navigate('/login');
+      navigate('/');
       return;
     }
     const verifySession = async () => {
@@ -131,7 +131,7 @@ export default function UserDasboardd() {
         if (res.status === 401) {
           alert('Session Expired: You have safely logged in from another device.');
           localStorage.removeItem("userInfo");
-          navigate('/login');
+          navigate('/');
         }
       } catch (err) {
         console.error('Session validation error:', err);
