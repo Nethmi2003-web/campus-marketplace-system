@@ -48,7 +48,7 @@ function AdminSidebar() {
 
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
-    navigate("/login");
+    navigate("/");
   };
 
   const tabs = [
@@ -92,7 +92,7 @@ export default function AdmnDashboardd() {
   // Aggressive Session Validation
   React.useEffect(() => {
     if (!userInfo.token) {
-      navigate('/login');
+      navigate('/');
       return;
     }
     const verifySession = async () => {
@@ -103,7 +103,7 @@ export default function AdmnDashboardd() {
         if (res.status === 401) {
           alert('Admin Session Expired: Security mechanism detected a new login. You have been securely signed out.');
           localStorage.removeItem("userInfo");
-          navigate('/login');
+          navigate('/');
         }
       } catch (err) {
         console.error('Session validation error:', err);
