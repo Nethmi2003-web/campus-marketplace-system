@@ -346,5 +346,5 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ---
 
 <p align="center">
-  Built with ❤️ by the Campus Marketplace Team | SLIIT – ITPM 2025
+   Campus Marketplace Team | SLIIT – ITPM 2026
 </p>
