@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 // Pages
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import MarketplaceUI from './pages/User/MarketplaceUI';
+import MarketplaceUI from './components/MarketplaceUI';
 
 // Isolated Dashboards
 import UserDasboardd from './pages/UserDasboardd';
