@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, User, Tag, Clock, CheckCircle } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn } from "../lib/utils";
 
 // --- INLINE UI COMPONENTS --- //
 
