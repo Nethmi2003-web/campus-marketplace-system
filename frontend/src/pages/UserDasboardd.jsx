@@ -4,28 +4,30 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Building2, Search, Bell, ShoppingCart, User, LayoutDashboard,
   ShoppingBag, PlusCircle, History, ShieldCheck, LogOut,
-  BarChart2, FileText
+  BarChart2, FileText, Heart
 } from "lucide-react";
 
 import { MarketplaceHeader } from "../components/MarketplaceHeader";
 import { FeaturedEvents } from "../components/FeaturedEvents";
-import { StatsOverview } from "../components/StatsOverview";
+
 import { UserAnalyticsTab } from "../components/UserAnalyticsTab";
 import { UserReportsTab } from "../components/UserReportsTab";
+import { UserCartTab } from "../components/UserCartTab";
+import { UserWishlistTab } from "../components/UserWishlistTab";
 import { EventCard } from "../components/EventCard";
-import MarketplaceUI from "./User/MarketplaceUI";
+import MarketplaceUI from "../components/MarketplaceUI";
 
 // -------------------------------------------------------------
 // STANDALONE USER NAVBAR
 // -------------------------------------------------------------
-function UserNavbar({ user }) {
+function UserNavbar({ user, setActiveTab }) {
   return (
     <nav className="h-20 bg-background/95 backdrop-blur-md border-b fixed top-0 left-0 right-0 z-40 px-6 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
           <span className="text-white font-black text-xl">S</span>
         </div>
-        <div className="hidden md:flex flex-col">
+        <div className="hidden md:flex flex-col cursor-pointer" onClick={() => setActiveTab('overview')}>
            <span className="font-black text-primary leading-tight">SLIIT EMS</span>
            <span className="text-[10px] uppercase font-bold text-secondary tracking-widest">Marketplace</span>
         </div>
@@ -37,9 +39,19 @@ function UserNavbar({ user }) {
       </div>
 
       <div className="flex items-center gap-6">
-        <button className="relative p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors">
+        <button 
+          onClick={() => setActiveTab('cart')}
+          className="relative p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors"
+        >
           <ShoppingCart size={20} />
           <div className="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full" />
+        </button>
+        <button 
+          onClick={() => setActiveTab('wishlist')}
+          className="relative p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors"
+        >
+          <Heart size={20} />
+          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
         </button>
         <button className="relative p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors">
           <Bell size={20} />
@@ -59,9 +71,7 @@ function UserNavbar({ user }) {
   );
 }
 
-// -------------------------------------------------------------
-// STANDALONE USER SIDEBAR
-// -------------------------------------------------------------
+
 function UserSidebar({ activeTab, setActiveTab }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -74,10 +84,12 @@ function UserSidebar({ activeTab, setActiveTab }) {
   const tabs = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
     { id: "marketplace", label: "Marketplace", icon: ShoppingBag },
+    { id: "cart", label: "My Cart", icon: ShoppingCart },
     { id: "sell", label: "Sell Item", icon: PlusCircle },
     { id: "transactions", label: "Transactions", icon: History },
     { id: "analytics", label: "My Analytics", icon: BarChart2 },
     { id: "reports", label: "My Reports", icon: FileText },
+    { id: "wishlist", label: "Wishlist", icon: Heart },
     { id: "profile", label: "Profile Settings", icon: User },
   ];
 
@@ -125,7 +137,7 @@ export default function UserDasboardd() {
     }
     const verifySession = async () => {
       try {
-        const res = await fetch("http://localhost:5001/api/users/me", {
+        const res = await fetch("/api/users/me", {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });
         if (res.status === 401) {
@@ -147,7 +159,7 @@ export default function UserDasboardd() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
-      <UserNavbar user={userInfo} />
+      <UserNavbar user={userInfo} setActiveTab={setActiveTab} />
       
       <div className="flex flex-1 min-w-0 pt-20">
         <UserSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -164,26 +176,24 @@ export default function UserDasboardd() {
             <div className="flex gap-2 p-1 bg-muted/50 rounded-xl w-max">
               <button onClick={() => setActiveTab('overview')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'overview' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Overview</button>
               <button onClick={() => setActiveTab('marketplace')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'marketplace' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Marketplace</button>
+              <button onClick={() => setActiveTab('cart')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'cart' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Cart</button>
               <button onClick={() => setActiveTab('analytics')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'analytics' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Analytics</button>
               <button onClick={() => setActiveTab('reports')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'reports' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Reports</button>
+              <button onClick={() => setActiveTab('wishlist')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'wishlist' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Wishlist</button>
             </div>
           </div>
 
           {activeTab === 'marketplace' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><MarketplaceUI /></div>}
+          {activeTab === 'cart' && <UserCartTab />}
 
           {activeTab === 'overview' && (
-            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <StatsOverview />
-              <div className="pt-8 border-t border-border/50">
-                  <div className="mb-6">
-                      <h2 className="text-2xl font-black text-primary">Discover Campus Events</h2>
-                      <p className="text-muted-foreground font-medium">Join the latest activities across the university</p>
-                  </div>
-                  <MarketplaceHeader onSearch={() => {}} onCategoryChange={() => {}} selectedCategory="all" />
-                  <div className="mt-8">
-                      <FeaturedEvents events={featuredEvents} />
-                  </div>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="mb-2">
+                <h2 className="text-2xl font-black text-primary">Discover Campus Events</h2>
+                <p className="text-muted-foreground font-medium">Join the latest activities across the university</p>
               </div>
+              <MarketplaceHeader onSearch={() => {}} onCategoryChange={() => {}} selectedCategory="all" />
+              <FeaturedEvents events={featuredEvents} />
             </div>
           )}
 
@@ -226,6 +236,8 @@ export default function UserDasboardd() {
                </div>
             </div>
           )}
+
+          {activeTab === 'wishlist' && <UserWishlistTab />}
 
         </main>
       </div>

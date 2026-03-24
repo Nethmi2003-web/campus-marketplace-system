@@ -16,9 +16,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ── Routes ────────────────────────────────────────────────
 // Component 1 – User Management
 app.use('/api/users', require('./user-service/routes/userRoutes'));
+
+// Component 2 – Item Management
+app.use('/api/items', require('./item-management/routes/itemRoutes'));
+
+// Component 3 – Transaction Management (Cart & Orders)
+app.use('/api/cart', require('./transaction-service/routes/cartRoutes'));
+app.use('/api/orders', require('./transaction-service/routes/orderRoutes'));
+app.use('/api/wishlist', require('./transaction-service/routes/wishlistRoutes'));
 
 // Health check
 app.get('/', (req, res) => {
@@ -33,7 +40,11 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: err.message || 'Internal Server Error' });
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode).json({ 
+    success: false,
+    message: err.message || 'Internal Server Error' 
+  });
 });
 
 const PORT = process.env.PORT || 5000;

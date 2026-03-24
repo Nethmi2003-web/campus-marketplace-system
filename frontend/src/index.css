@@ -62,6 +62,7 @@
   --destructive-foreground: #ffffff;
   --border: #334155;
   --input: #334155;
+  --input-background: #1e293b;
   --ring: #22c55e;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -80,7 +81,7 @@
   --sidebar-ring: #7bdc93;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -129,58 +130,58 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply font-sans;
   }
 }
 
-/* Custom gradient utilities for EMS theme */
-.gradient-sidebar {
-  background: linear-gradient(135deg, var(--sidebar) 0%, var(--sidebar-accent) 100%);
+/* Custom gradient utilities */
+@layer utilities {
+  .gradient-sidebar {
+    background: linear-gradient(135deg, var(--sidebar) 0%, var(--sidebar-accent) 100%);
+  }
+
+  .gradient-sidebar-reverse {
+    background: linear-gradient(135deg, var(--sidebar-accent) 0%, var(--sidebar) 100%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(135deg, var(--sidebar) 0%, var(--sidebar-accent) 50%, var(--sidebar) 100%);
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--sidebar-primary) 0%, rgba(123, 220, 147, 0.8) 100%);
+  }
+
+  .gradient-glow {
+    box-shadow: 0 0 20px rgba(123, 220, 147, 0.3), 0 0 40px rgba(123, 220, 147, 0.1);
+  }
+
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(135deg, var(--sidebar-primary), var(--sidebar-accent));
+    border-radius: 1.5rem;
+    padding: 1px;
+  }
+
+  .active-indicator {
+    animation: activeIndicator 2s ease-in-out infinite;
+  }
+
+  .sidebar-expand {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
 
-.gradient-sidebar-reverse {
-  background: linear-gradient(135deg, var(--sidebar-accent) 0%, var(--sidebar) 100%);
-}
-
-.gradient-card {
-  background: linear-gradient(135deg, var(--sidebar) 0%, var(--sidebar-accent) 50%, var(--sidebar) 100%);
-}
-
-.gradient-primary {
-  background: linear-gradient(135deg, var(--sidebar-primary) 0%, rgba(123, 220, 147, 0.8) 100%);
-}
-
-.gradient-glow {
-  box-shadow: 0 0 20px rgba(123, 220, 147, 0.3), 0 0 40px rgba(123, 220, 147, 0.1);
-}
-
-/* Sidebar animations */
 @keyframes activeIndicator {
   0% { transform: scale(0.8); opacity: 0.5; }
   50% { transform: scale(1.1); opacity: 1; }
   100% { transform: scale(1); opacity: 0.8; }
-}
-
-.active-indicator {
-  animation: activeIndicator 2s ease-in-out infinite;
-}
-
-.sidebar-expand {
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.gradient-border {
-  position: relative;
-  background: linear-gradient(135deg, var(--sidebar-primary), var(--sidebar-accent));
-  border-radius: 1.5rem;
-  padding: 1px;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
 }
