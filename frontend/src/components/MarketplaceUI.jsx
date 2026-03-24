@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, User, Tag, Clock, CheckCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, User, Tag, Clock, CheckCircle, Loader2 } from "lucide-react";
+import axios from "axios";
 import { cn } from "../lib/utils";
 
 // --- INLINE UI COMPONENTS --- //
 
-const Button = React.forwardRef(({ className, variant = "default", size = "default", ...props }, ref) => {
+export const Button = React.forwardRef(({ className, variant = "default", size = "default", ...props }, ref) => {
   const variants = {
     default: "bg-primary text-primary-foreground hover:bg-primary/90",
     destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
@@ -34,7 +35,7 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
 });
 Button.displayName = "Button";
 
-const Badge = React.forwardRef(({ className, variant = "default", ...props }, ref) => {
+export const Badge = React.forwardRef(({ className, variant = "default", ...props }, ref) => {
   const variants = {
     default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
     secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
@@ -75,13 +76,28 @@ function InlineItemCard({
   title,
   price,
   category,
+  condition,
   imageUrl,
   seller,
-  condition,
   status = "Available",
-  isFeatured = false
+  isFeatured = false,
+  onAddToCart,
+  onToggleWishlist,
+  isLiked: initialLiked = false
 }) {
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(initialLiked);
+
+
+  React.useEffect(() => {
+    setIsLiked(initialLiked);
+  }, [initialLiked]);
+
+  const handleLikeClick = (e) => {
+    e.stopPropagation();
+    const newLikedState = !isLiked;
+    setIsLiked(newLikedState);
+    onToggleWishlist(id, newLikedState);
+  };
 
   return (
     <div className="group overflow-hidden border-2 hover:border-primary/30 hover:shadow-2xl transition-all duration-500 bg-card rounded-3xl flex flex-col text-card-foreground shadow-sm">
@@ -120,15 +136,19 @@ function InlineItemCard({
 
         {/* Action Buttons (Overlay) */}
         <div className="absolute bottom-4 right-4 flex gap-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+            <Button 
+              size="icon" 
+              variant="secondary" 
+              className={cn("rounded-full w-10 h-10 shadow-xl border bg-white/80 backdrop-blur-sm transition-all", isLiked ? "bg-red-500 text-white border-red-600 shadow-red-500/20" : "text-muted-foreground hover:bg-white hover:text-red-500")}
+              onClick={handleLikeClick}
+            >
+              <Heart size={18} className={cn(isLiked && "fill-current")} />
+            </Button>
            <Button 
              size="icon" 
-             variant="secondary" 
-             className={cn("rounded-full w-10 h-10 shadow-xl", isLiked && "bg-red-500 hover:bg-red-600")}
-             onClick={() => setIsLiked(!isLiked)}
+             className="rounded-full w-10 h-10 shadow-xl bg-white text-primary hover:bg-primary hover:text-white"
+             onClick={() => onAddToCart(id)}
            >
-             <Heart size={18} className={cn(isLiked && "fill-white text-white")} />
-           </Button>
-           <Button size="icon" className="rounded-full w-10 h-10 shadow-xl bg-white text-primary hover:bg-primary hover:text-white">
              <ShoppingCart size={18} />
            </Button>
         </div>
@@ -183,28 +203,135 @@ const CATEGORIES = [
   { id: "all", name: "All Items" },
   { id: "Books", name: "Books" },
   { id: "Electronics", name: "Electronics" },
-  { id: "Hostel Items", name: "Hostel Items" },
-  { id: "Clothing", name: "Clothing" },
-];
-
-const DUMMY_ITEMS = [
-  { id: 1, title: "Thermodynamics 8th Edition", price: 3500, category: "Books", condition: "Like New", seller: "Nethmi W.", imageUrl: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=500&auto=format&fit=crop" },
-  { id: 2, title: "Dell Monitor 24\"", price: 45000, category: "Electronics", condition: "Good", seller: "Amal P.", imageUrl: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?q=80&w=500&auto=format&fit=crop" },
-  { id: 3, title: "Wooden Study Table", price: 8500, category: "Hostel Items", condition: "Fair", seller: "Kushan R.", imageUrl: "https://images.unsplash.com/photo-1518455027359-f3f816b1a20a?q=80&w=500&auto=format&fit=crop" },
-  { id: 4, title: "Logitech G502 Mouse", price: 12000, category: "Electronics", condition: "New", seller: "Saman H.", isFeatured: true, imageUrl: "https://images.unsplash.com/photo-1527443195645-1133e7d2bb81?q=80&w=500&auto=format&fit=crop" },
-  { id: 5, title: "Lab Coat - Medium", price: 1500, category: "Clothing", condition: "Good", seller: "Dilini S.", imageUrl: "https://images.unsplash.com/photo-1584820923423-8f02030f8f84?q=80&w=500&auto=format&fit=crop" },
-  { id: 6, title: "Engineering Drawing Set", price: 5500, category: "Books", condition: "Like New", seller: "Rohan D.", imageUrl: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=500&auto=format&fit=crop" }
+  { id: "Lab Equipment", name: "Lab Equipment" },
+  { id: "Clothing & Uniforms", name: "Clothing & Uniforms" },
+  { id: "Sports & Fitness", name: "Sports & Fitness" },
+  { id: "Services & Tutoring", name: "Services & Tutoring" },
+  { id: "Other", name: "Other" },
 ];
 
 export default function MarketplaceUI() {
+  const [items, setItems] = useState([]);
+  const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredItems = DUMMY_ITEMS.filter(item => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      
+      // Fetch Marketplace Items
+      const itemsRes = await axios.get("/api/items");
+      if (itemsRes.data.success) {
+        setItems(itemsRes.data.data);
+      }
+
+      // Fetch User Wishlist to show already liked items
+      if (userInfo.token) {
+        try {
+          const wishlistRes = await axios.get("/api/wishlist", {
+            headers: { Authorization: `Bearer ${userInfo.token}` }
+          });
+          if (wishlistRes.data.success) {
+            const ids = new Set(wishlistRes.data.data.products.map(p => p._id || p));
+            setWishlistIds(ids);
+          }
+        } catch (wishErr) {
+          console.warn("Wishlist fetch failed:", wishErr);
+          // Non-critical error, proceed with items only
+        }
+      }
+      
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching marketplace data:", err);
+      setError("Failed to load items. Please try again later.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleToggleWishlist = async (productId, isLiked) => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      if (!userInfo.token) {
+        alert("Please login to save items to your wishlist.");
+        return;
+      }
+
+      if (isLiked) {
+        await axios.post("/api/wishlist", { productId }, {
+          headers: { Authorization: `Bearer ${userInfo.token}` }
+        });
+        setWishlistIds(prev => new Set(prev).add(productId));
+      } else {
+        await axios.delete(`/api/wishlist/${productId}`, {
+          headers: { Authorization: `Bearer ${userInfo.token}` }
+        });
+        setWishlistIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+      }
+    } catch (err) {
+      console.error("Wishlist toggle error:", err);
+      // Revert local state if needed
+    }
+  };
+
+  const handleAddToCart = async (productId) => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      if (!userInfo.token) {
+        alert("Please login to add items to your cart.");
+        return;
+      }
+
+      const response = await axios.post("/api/cart", 
+        { productId, quantity: 1 },
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+
+      if (response.data.success) {
+        alert("Item added to cart successfully!");
+      }
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      alert(err.response?.data?.message || "Failed to add item to cart.");
+    }
+  };
+
+  const filteredItems = items.filter(item => {
     const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  if (loading) {
+    return (
+      <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-muted-foreground font-bold animate-pulse">Fetching campus deals...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <X className="w-12 h-12 text-red-500" />
+        <p className="text-red-500 font-bold">{error}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 p-4 md:p-6 pb-24 md:pb-6">
@@ -256,7 +383,15 @@ export default function MarketplaceUI() {
       {filteredItems.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredItems.map(item => (
-            <InlineItemCard key={item.id} {...item} />
+            <InlineItemCard 
+              key={item._id} 
+              id={item._id}
+              {...item} 
+              seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Anonymous"}
+              onAddToCart={handleAddToCart}
+              onToggleWishlist={handleToggleWishlist}
+              isLiked={wishlistIds.has(item._id)}
+            />
           ))}
         </div>
       ) : (

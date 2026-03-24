@@ -9,6 +9,7 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { AdminPricingTab } from "../components/AdminPricingTab";
 import { AdminTransactionsTab } from "../components/AdminTransactionsTab";
+import { AdminListingsTab } from "../components/AdminListingsTab";
 
 // Removed IoT specific chart imports
 
@@ -102,7 +103,7 @@ export default function AdmnDashboardd() {
     }
     const verifySession = async () => {
       try {
-        const res = await fetch("http://localhost:5001/api/users/me", {
+        const res = await fetch("/api/users/me", {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });
         if (res.status === 401) {
@@ -211,15 +212,7 @@ export default function AdmnDashboardd() {
           )}
 
           {/* ── LISTINGS ── */}
-          {activeTab === 'listings' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <h1 className="text-3xl font-black text-primary">Active Listings</h1>
-              <p className="text-muted-foreground font-medium">Monitor and moderate all marketplace listings</p>
-              <div className="rounded-2xl border bg-card shadow-xl p-6">
-                <p className="text-muted-foreground text-center py-16">Listings management coming soon.</p>
-              </div>
-            </div>
-          )}
+          {activeTab === 'listings' && <AdminListingsTab />}
 
           {/* ── TRANSACTIONS ── */}
           {activeTab === 'transactions' && <AdminTransactionsTab />}

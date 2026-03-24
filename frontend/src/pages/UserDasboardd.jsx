@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Building2, Search, Bell, ShoppingCart, User, LayoutDashboard,
   ShoppingBag, PlusCircle, History, ShieldCheck, LogOut,
-  BarChart2, FileText
+  BarChart2, FileText, Heart
 } from "lucide-react";
 
 import { MarketplaceHeader } from "../components/MarketplaceHeader";
@@ -13,6 +13,7 @@ import { FeaturedEvents } from "../components/FeaturedEvents";
 import { UserAnalyticsTab } from "../components/UserAnalyticsTab";
 import { UserReportsTab } from "../components/UserReportsTab";
 import { UserCartTab } from "../components/UserCartTab";
+import { UserWishlistTab } from "../components/UserWishlistTab";
 import { EventCard } from "../components/EventCard";
 import MarketplaceUI from "../components/MarketplaceUI";
 
@@ -44,6 +45,13 @@ function UserNavbar({ user, setActiveTab }) {
         >
           <ShoppingCart size={20} />
           <div className="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full" />
+        </button>
+        <button 
+          onClick={() => setActiveTab('wishlist')}
+          className="relative p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors"
+        >
+          <Heart size={20} />
+          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
         </button>
         <button className="relative p-2 text-muted-foreground hover:bg-muted rounded-xl transition-colors">
           <Bell size={20} />
@@ -81,6 +89,7 @@ function UserSidebar({ activeTab, setActiveTab }) {
     { id: "transactions", label: "Transactions", icon: History },
     { id: "analytics", label: "My Analytics", icon: BarChart2 },
     { id: "reports", label: "My Reports", icon: FileText },
+    { id: "wishlist", label: "Wishlist", icon: Heart },
     { id: "profile", label: "Profile Settings", icon: User },
   ];
 
@@ -128,7 +137,7 @@ export default function UserDasboardd() {
     }
     const verifySession = async () => {
       try {
-        const res = await fetch("http://localhost:5001/api/users/me", {
+        const res = await fetch("/api/users/me", {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });
         if (res.status === 401) {
@@ -170,6 +179,7 @@ export default function UserDasboardd() {
               <button onClick={() => setActiveTab('cart')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'cart' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Cart</button>
               <button onClick={() => setActiveTab('analytics')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'analytics' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Analytics</button>
               <button onClick={() => setActiveTab('reports')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'reports' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Reports</button>
+              <button onClick={() => setActiveTab('wishlist')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'wishlist' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Wishlist</button>
             </div>
           </div>
 
@@ -226,6 +236,8 @@ export default function UserDasboardd() {
                </div>
             </div>
           )}
+
+          {activeTab === 'wishlist' && <UserWishlistTab />}
 
         </main>
       </div>
