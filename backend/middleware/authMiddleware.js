@@ -12,6 +12,11 @@ const protect = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select('-password');
       
+      if (!req.user) {
+        res.status(401);
+        throw new Error('Not authorized, user not found');
+      }
+
       // Strict unique session lock: Prevents generic parallel active logins
       if (req.user.sessionVersion !== decoded.sessionVersion) {
         res.status(401);
