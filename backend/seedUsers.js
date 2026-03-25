@@ -15,14 +15,18 @@ const seedUsers = async () => {
     await connectDB();
 
     console.log('--- Starting Database Seeding ---');
+    
+    // 0. Clear existing users (As requested for Single Admin enforcement)
+    await User.deleteMany({});
+    console.log('🗑️  All existing users removed.');
 
     // 1. Seed Admin
-    const adminEmail = 'admin@sliit.lk';
+    const adminEmail = 'admin@my.sliit.lk';
     const adminExists = await User.findOne({ universityEmail: adminEmail });
 
     if (!adminExists) {
       await User.create({
-        firstName: 'Super',
+        firstName: 'System',
         lastName: 'Admin',
         faculty: 'Administration',
         universityEmail: adminEmail,
@@ -30,9 +34,7 @@ const seedUsers = async () => {
         confirmPassword: 'password123',
         role: 'admin'
       });
-      console.log('✅ Admin user created: admin@sliit.lk / password123');
-    } else {
-      console.log('ℹ️ Admin user already exists.');
+      console.log('✅ Single Admin user created: admin@my.sliit.lk / password123');
     }
 
     // 2. Seed Regular Student User

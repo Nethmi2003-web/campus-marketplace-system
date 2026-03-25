@@ -40,13 +40,17 @@ exports.createOrder = async (req, res, next) => {
       orderStatus: 'pending'
     });
 
-    // 4. Update item statuses to 'pending' (locked for others) or 'sold'
-    // For now, let's mark them as 'pending' to indicate they are in a transaction
-    const itemIds = orderItems.map(item => item.product);
-    await Item.updateMany(
-      { _id: { $in: itemIds } },
-      { $set: { status: 'pending' } }
-    );
+    // 4. Update item stock quantities and status
+    for (const item of orderItems) {
+      const product = await Item.findById(item.product);
+      if (product) {
+        product.stockQuantity = Math.max(0, product.stockQuantity - item.quantity);
+        if (product.stockQuantity === 0) {
+          product.status = 'sold';
+        }
+        await product.save();
+      }
+    }
 
     // 5. Clear the user's cart
     cart.items = [];
@@ -113,14 +117,8 @@ exports.updateOrderStatus = async (req, res, next) => {
     if (orderStatus) order.orderStatus = orderStatus;
     if (paymentStatus) order.paymentStatus = paymentStatus;
 
-    // If order is delivered/completed, mark items as 'sold'
-    if (orderStatus === 'delivered' || paymentStatus === 'completed') {
-       const itemIds = order.items.map(item => item.product);
-       await Item.updateMany(
-         { _id: { $in: itemIds } },
-         { $set: { status: 'sold' } }
-       );
-    }
+    // If order is delivered/completed, additional logic can be added here if needed
+    // (Stock was already decremented at creation for online/immediate orders)
 
     await order.save();
 

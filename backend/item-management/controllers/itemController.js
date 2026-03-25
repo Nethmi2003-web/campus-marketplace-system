@@ -7,7 +7,7 @@ exports.getItems = async (req, res, next) => {
   try {
     const items = await Item.find({ status: 'available' }).populate({
       path: 'seller',
-      select: 'name email phone'
+      select: 'firstName lastName universityEmail phone'
     });
 
     res.status(200).json({

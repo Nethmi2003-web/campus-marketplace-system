@@ -34,7 +34,7 @@ const seedItems = async () => {
         condition: "Used",
         imageUrl: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=500&auto=format&fit=crop",
         seller: student._id,
-        stockQuantity: 1,
+        stockQuantity: 10,
         status: 'available'
       },
       {
@@ -56,7 +56,7 @@ const seedItems = async () => {
         condition: "Used",
         imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=500&auto=format&fit=crop",
         seller: student._id,
-        stockQuantity: 1,
+        stockQuantity: 10,
         status: 'available'
       },
       {
@@ -67,7 +67,7 @@ const seedItems = async () => {
         condition: "Like New",
         imageUrl: "https://images.unsplash.com/photo-1628113310803-aa1377800094?q=80&w=500&auto=format&fit=crop",
         seller: student._id,
-        stockQuantity: 1,
+        stockQuantity: 10,
         status: 'available'
       },
       {
