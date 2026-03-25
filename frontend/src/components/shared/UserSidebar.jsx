@@ -20,7 +20,7 @@ export function UserSidebar({ activeTab, setActiveTab }) {
   const location = useLocation();
 
   const handleLogout = () => {
-    localStorage.removeItem("userInfo");
+    localStorage.removeItem("std_userInfo");
     navigate("/");
   };
 

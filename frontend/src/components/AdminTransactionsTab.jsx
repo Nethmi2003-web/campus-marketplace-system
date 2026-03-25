@@ -20,7 +20,7 @@ export function AdminTransactionsTab() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+        const userInfo = JSON.parse(localStorage.getItem("admin_userInfo") || "{}");
         const response = await axios.get("/api/orders", {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });
