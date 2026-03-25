@@ -104,13 +104,12 @@ function LoginPage() {
          throw new Error(data.message || "Login failed");
       }
 
-      // Save token & user
-      localStorage.setItem("userInfo", JSON.stringify(data));
-      
-      // Isolated routing path mapping
+      // Save token & user into role-specific keys to allow concurrent multi-role sessions
       if (data.role === 'admin') {
+         localStorage.setItem("admin_userInfo", JSON.stringify(data));
          navigate("/admin-dashboard");
       } else {
+         localStorage.setItem("std_userInfo", JSON.stringify(data));
          navigate("/user-dashboard");
       }
       

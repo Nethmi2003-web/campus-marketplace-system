@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, User, Tag, Clock, CheckCircle, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, Tag, Loader2, Clock } from "lucide-react";
 import axios from "axios";
 import { cn } from "../lib/utils";
 
@@ -24,7 +24,7 @@ export const Button = React.forwardRef(({ className, variant = "default", size =
     <button
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-2xl text-sm font-black uppercase tracking-widest ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95",
         variants[variant],
         sizes[size],
         className
@@ -95,15 +95,13 @@ function InlineItemCard({
 
   const handleLikeClick = (e) => {
     e.stopPropagation();
-    const newLikedState = !isLiked;
-    setIsLiked(newLikedState);
-    onToggleWishlist(id, newLikedState);
+    onToggleWishlist(id, !isLiked);
   };
 
   return (
-    <div className="group overflow-hidden border-2 hover:border-primary/30 hover:shadow-2xl transition-all duration-500 bg-card rounded-3xl flex flex-col text-card-foreground shadow-sm">
+    <div className="group overflow-hidden border-2 border-white backdrop-blur-xl hover:border-primary/20 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all duration-700 bg-card/40 rounded-[2.5rem] flex flex-col text-card-foreground shadow-xl shadow-black/5">
       {/* Image Section */}
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative h-56 overflow-hidden rounded-t-[2.5rem]">
         <img
           src={imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=500&auto=format&fit=crop"}
           alt={title}
@@ -136,11 +134,10 @@ function InlineItemCard({
         </Badge>
 
         {/* Action Buttons (Overlay) */}
-        <div className="absolute bottom-4 right-4 flex gap-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="absolute bottom-4 right-4 flex gap-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
             <Button 
               size="icon" 
-              variant="secondary" 
-              className={cn("rounded-full w-10 h-10 shadow-xl border bg-white/80 backdrop-blur-sm transition-all", isLiked ? "bg-red-500 text-white border-red-600 shadow-red-500/20" : "text-muted-foreground hover:bg-white hover:text-red-500")}
+              className={cn("rounded-2xl w-10 h-10 shadow-xl border bg-white backdrop-blur-sm transition-all", isLiked ? "bg-red-500 text-white border-red-600 shadow-red-500/20" : "text-muted-foreground hover:bg-white hover:text-red-500")}
               onClick={handleLikeClick}
             >
               <Heart size={18} className={cn(isLiked && "fill-current")} />
@@ -148,7 +145,7 @@ function InlineItemCard({
            <Button 
              size="icon" 
              className={cn(
-               "rounded-full w-10 h-10 shadow-xl transition-all",
+               "rounded-2xl w-10 h-10 shadow-xl transition-all",
                stockQuantity > 0 
                  ? "bg-white text-primary hover:bg-primary hover:text-white" 
                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
@@ -162,9 +159,9 @@ function InlineItemCard({
       </div>
 
       {/* Content Section */}
-      <div className="p-5">
+      <div className="p-6 flex-1 flex flex-col">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-lg text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="font-black text-xl text-primary tracking-tight line-clamp-1 group-hover:text-secondary transition-colors leading-tight">
             {title}
           </h3>
         </div>
@@ -187,24 +184,14 @@ function InlineItemCard({
            </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-border">
+        <div className="flex items-center justify-between pt-5 border-t border-dashed border-muted-foreground/20 mt-auto">
           <div>
-            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Price</p>
-            <p className="text-2xl font-black text-primary">LKR {price.toLocaleString()}</p>
+            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Price</p>
+            <p className="text-2xl font-black text-primary tracking-tight">LKR {price.toLocaleString()}</p>
           </div>
-          
-          <div className="flex flex-col items-end">
-             <div className="flex items-center gap-1.5 mb-1 cursor-pointer hover:opacity-80 transition-opacity">
-                <span className="text-[11px] font-medium text-foreground">{seller || "Anonym"}</span>
-                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
-                   <User size={14} className="text-muted-foreground" />
-                </div>
-             </div>
-             <div className="flex items-center gap-1 text-[10px] text-green-600 font-bold">
-                <CheckCircle size={10} />
-                <span>Verified Seller</span>
-             </div>
-          </div>
+          <button onClick={() => stockQuantity > 0 && onAddToCart(id)} className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-lg shadow-primary/5">
+             <ShoppingCart size={20} />
+          </button>
         </div>
       </div>
     </div>
@@ -235,7 +222,7 @@ export default function MarketplaceUI() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       
       // Fetch Marketplace Items
       const itemsRes = await axios.get("/api/items");
@@ -273,7 +260,7 @@ export default function MarketplaceUI() {
 
   const handleToggleWishlist = async (productId, isLiked) => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       if (!userInfo.token) {
         alert("Please login to save items to your wishlist.");
         return;
@@ -302,7 +289,7 @@ export default function MarketplaceUI() {
 
   const handleAddToCart = async (productId) => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       if (!userInfo.token) {
         alert("Please login to add items to your cart.");
         return;
@@ -354,37 +341,37 @@ export default function MarketplaceUI() {
         </div>
         
         <div className="flex items-center gap-3 w-full md:w-auto">
-           <div className="relative flex-1 md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+           <div className="relative flex-1 md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input 
                 placeholder="Search items..." 
-                className="pl-9 rounded-xl border-muted focus:border-primary transition-all shadow-sm"
+                className="pl-12 h-14 rounded-2xl border-white bg-white/50 backdrop-blur-md focus:border-primary/30 transition-all shadow-xl shadow-black/5 font-medium text-lg"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary">
-                  <X size={14} />
+                <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+                  <X size={18} />
                 </button>
               )}
            </div>
-           <Button variant="outline" className="rounded-xl gap-2 border-muted hover:border-primary/30">
-              <SlidersHorizontal size={16} />
-              <span className="hidden sm:inline">Filters</span>
+           <Button variant="outline" className="h-14 rounded-2xl gap-2 border-white bg-white/50 backdrop-blur-md hover:border-primary/30 shadow-xl shadow-black/5 px-6">
+              <SlidersHorizontal size={20} className="text-primary" />
+              <span className="hidden sm:inline font-black text-xs uppercase tracking-widest text-primary">Filters</span>
            </Button>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide">
         {CATEGORIES.map(cat => (
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
             className={cn(
-              "px-5 py-2 rounded-full text-xs font-bold transition-all border-2 whitespace-nowrap",
+              "px-6 py-3 rounded-2xl text-[10px] uppercase tracking-widest font-black transition-all border-2 whitespace-nowrap shadow-sm",
               selectedCategory === cat.id
-                ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                : "bg-muted/50 text-muted-foreground border-transparent hover:border-muted hover:text-primary"
+                ? "bg-primary text-white border-primary shadow-xl shadow-primary/20 scale-105"
+                : "bg-white/50 backdrop-blur-md text-muted-foreground border-white hover:border-primary/20 hover:text-primary"
             )}
           >
             {cat.name}
@@ -399,7 +386,7 @@ export default function MarketplaceUI() {
               key={item._id} 
               id={item._id}
               {...item} 
-              seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Anonymous"}
+              seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Student"}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               isLiked={wishlistIds.has(item._id)}

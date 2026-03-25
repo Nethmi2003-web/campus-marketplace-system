@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Filter, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { cn } from "../lib/utils";
 
@@ -58,20 +58,10 @@ Badge.displayName = "Badge";
 
 
 export function MarketplaceHeader({ 
-  onSearch, 
-  onCategoryChange, 
-  selectedCategory = "all" 
+  onSearch
 }) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const categories = [
-    { id: "all", name: "All Events", icon: "🎯", count: 24 },
-    { id: "tech", name: "Technology", icon: "💻", count: 8 },
-    { id: "sports", name: "Sports", icon: "⚽", count: 5 },
-    { id: "culture", name: "Cultural", icon: "🎨", count: 6 },
-    { id: "academic", name: "Academic", icon: "📚", count: 4 },
-    { id: "social", name: "Social", icon: "🤝", count: 3 },
-  ];
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -88,7 +78,7 @@ export function MarketplaceHeader({
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-secondary" />
             <Badge className="bg-secondary/20 text-white border-secondary/30">
-              {categories.find(c => c.id === "all")?.count} Events Available
+              24 Events Available
             </Badge>
           </div>
           
@@ -120,57 +110,6 @@ export function MarketplaceHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide w-full">
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground">Categories:</span>
-        </div>
-        
-        <div className="flex gap-2">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => onCategoryChange?.(category.id)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 whitespace-nowrap",
-                "border-2 shadow-sm hover:shadow-md hover:scale-105",
-                selectedCategory === category.id
-                  ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
-                  : "bg-card text-foreground border-border hover:border-primary/50"
-              )}
-            >
-              <span className="text-lg">{category.icon}</span>
-              <span>{category.name}</span>
-              <Badge 
-                className={cn(
-                  "ml-1 transition-colors",
-                  selectedCategory === category.id
-                    ? "bg-white/20 text-white"
-                    : "bg-muted text-muted-foreground"
-                )}
-              >
-                {category.count}
-              </Badge>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {selectedCategory !== "all" && (
-        <div className="flex items-center gap-2 p-4 bg-accent/50 rounded-xl border border-border">
-          <Filter className="w-4 h-4 text-primary" />
-          <span className="text-sm text-foreground">Active filter:</span>
-          <Badge className="bg-primary text-white">
-            {categories.find(c => c.id === selectedCategory)?.name}
-          </Badge>
-          <button
-            onClick={() => onCategoryChange?.("all")}
-            className="ml-auto text-sm text-primary hover:text-primary/80 font-medium"
-          >
-            Clear filters
-          </button>
-        </div>
-      )}
     </div>
   );
 }

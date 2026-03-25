@@ -18,7 +18,7 @@ export function UserCartTab() {
 
   const fetchCart = async () => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       if (!userInfo.token) {
         setError("Please login to view your cart.");
         setLoading(false);
@@ -64,7 +64,7 @@ export function UserCartTab() {
     const newQuantity = Math.max(1, item.quantity + delta);
     
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       await axios.post("/api/cart", 
         { productId, quantity: newQuantity },
         { headers: { Authorization: `Bearer ${userInfo.token}` } }
@@ -81,7 +81,7 @@ export function UserCartTab() {
 
   const removeItem = async (productId) => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       await axios.delete(`/api/cart/${productId}`, {
         headers: { Authorization: `Bearer ${userInfo.token}` }
       });
@@ -96,7 +96,7 @@ export function UserCartTab() {
   const handleCheckout = async () => {
     try {
       setLoading(true);
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       const response = await axios.post("/api/orders", 
         { 
           paymentMethod, 
@@ -124,38 +124,42 @@ export function UserCartTab() {
 
   if (loading) {
     return (
-      <div className="py-24 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-xl font-bold text-primary animate-pulse">Checking your campus bag...</p>
+        <p className="text-xl font-bold text-primary animate-pulse tracking-tight">Checking your campus bag...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="py-24 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
+      <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center shadow-xl shadow-red-100">
           <Info size={40} />
         </div>
         <div className="space-y-2 max-w-sm">
-          <h3 className="text-2xl font-black text-red-500">Cart Issue</h3>
+          <h1 className="text-3xl font-black text-red-500 mb-2 tracking-tight">Cart Issue</h1>
           <p className="text-muted-foreground font-medium">{error}</p>
         </div>
+        <button onClick={fetchCart} className="px-8 py-3 bg-red-500 text-white rounded-2xl font-black shadow-lg hover:shadow-red-200 transition-all hover:scale-105">Retry</button>
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="py-24 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center text-muted-foreground/40">
+      <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-24 h-24 bg-muted/50 rounded-[2rem] flex items-center justify-center text-muted-foreground/30 shadow-inner">
           <ShoppingBag size={48} />
         </div>
         <div className="space-y-2 max-w-sm">
-          <h3 className="text-2xl font-black text-primary">Your cart is empty</h3>
+          <h1 className="text-4xl font-black text-primary mb-2 tracking-tight">Your bag is empty</h1>
           <p className="text-muted-foreground font-medium">Looks like you haven't added anything to your cart yet. Explore the marketplace to find great deals!</p>
         </div>
-        <button className="px-8 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-8 py-3 bg-primary text-white rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-105 transition-all uppercase tracking-widest text-xs"
+        >
           Browse Marketplace
         </button>
       </div>
@@ -168,17 +172,21 @@ export function UserCartTab() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Items List */}
         <div className="xl:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-primary tracking-tight">Shopping Cart</h2>
-            <span className="text-sm font-bold text-muted-foreground">{items.length} Items</span>
+          <div className="flex flex-col gap-2 mb-8">
+            <h1 className="text-4xl font-black text-primary mb-2 tracking-tight">Shopping Cart</h1>
+            <p className="text-muted-foreground font-medium flex items-center gap-2">
+              <ShoppingBag size={16} className="text-secondary" />
+              You have {items.length} items in your campus bag
+            </p>
           </div>
 
           <div className="space-y-4">
             {items.map(item => (
-              <div key={item.id} className="group bg-card border rounded-3xl p-4 md:p-6 transition-all hover:border-primary/20 hover:shadow-xl shadow-black/5 flex flex-col md:flex-row gap-6">
+              <div key={item.id} className="group bg-card/40 backdrop-blur-xl border-2 border-white rounded-[2.5rem] p-4 md:p-6 transition-all hover:border-primary/20 hover:shadow-2xl shadow-xl shadow-black/5 flex flex-col md:flex-row gap-6">
                 {/* Image */}
-                <div className="w-full md:w-32 h-32 rounded-2xl overflow-hidden bg-muted flex-shrink-0">
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div className="w-full md:w-32 h-32 rounded-[1.5rem] overflow-hidden bg-muted flex-shrink-0 relative">
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
                 </div>
 
                 {/* Info */}
@@ -246,11 +254,11 @@ export function UserCartTab() {
 
         {/* Summary Sidebar */}
         <div className="space-y-6">
-          <div className="bg-[#001f5c] rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
+          <div className="bg-[#001f5c] rounded-[3rem] p-8 text-white shadow-2xl relative overflow-hidden border-4 border-white/5">
             {/* Decorative Circle */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl" />
             
-            <h3 className="text-xl font-black mb-6 relative">Order Summary</h3>
+            <h3 className="text-2xl font-black mb-6 relative tracking-tight">Order Summary</h3>
             
             <div className="space-y-4 relative">
               <div className="flex justify-between text-sm font-medium text-white/70">
@@ -281,7 +289,7 @@ export function UserCartTab() {
 
             <button 
               onClick={() => setStep("checkout")}
-              className="w-full mt-8 py-4 bg-secondary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-secondary/20 hover:bg-secondary/90 transition-all flex items-center justify-center gap-2 group"
+              className="w-full mt-8 py-4 bg-secondary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
             >
               Proceed to Checkout
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -300,9 +308,9 @@ export function UserCartTab() {
           </div>
 
           {/* Help box */}
-          <div className="bg-card border rounded-3xl p-6 shadow-xl shadow-black/5">
-             <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-               <CreditCard size={16} /> Payment Methods
+          <div className="bg-card/50 backdrop-blur-xl border-2 border-white rounded-[2rem] p-6 shadow-xl shadow-black/5">
+             <h4 className="font-black text-primary mb-2 flex items-center gap-2 tracking-tight">
+               <CreditCard size={16} className="text-secondary" /> Payment Methods
              </h4>
              <p className="text-xs text-muted-foreground leading-relaxed">
                We support SLIIT student cards, bank transfers, and secure cash-on-handover for all campus trades.
@@ -316,12 +324,12 @@ export function UserCartTab() {
   // --- SUCCESS STEP --- //
   if (step === "success") return (
     <div className="max-w-2xl mx-auto py-12 text-center space-y-8 animate-in fade-in zoom-in duration-700">
-      <div className="w-24 h-24 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-green-200">
+      <div className="w-24 h-24 bg-green-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-green-200">
         <ShieldCheck size={48} />
       </div>
       
       <div className="space-y-4">
-        <h2 className="text-4xl font-black text-primary">Order Placed!</h2>
+        <h2 className="text-4xl font-black text-primary tracking-tight">Order Placed!</h2>
         <p className="text-muted-foreground font-medium">
           Your order <span className="text-primary font-bold">#{orderData?._id.slice(-8).toUpperCase()}</span> has been successfully placed.
         </p>

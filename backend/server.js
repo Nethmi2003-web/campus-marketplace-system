@@ -27,6 +27,9 @@ app.use('/api/cart', require('./transaction-service/routes/cartRoutes'));
 app.use('/api/orders', require('./transaction-service/routes/orderRoutes'));
 app.use('/api/wishlist', require('./transaction-service/routes/wishlistRoutes'));
 
+// Component 4 – Marketplace Features (Events, etc.)
+app.use('/api/events', require('./makrketPlace_features/routes/eventRoutes'));
+
 // Health check
 app.get('/', (req, res) => {
   res.json({ message: '🎓 Campus Marketplace API is running!' });

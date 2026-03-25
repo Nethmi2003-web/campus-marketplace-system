@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { cn } from '../lib/utils';
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -16,25 +17,23 @@ import { UserWishlistTab } from "../components/UserWishlistTab";
 import { EventCard } from "../components/EventCard";
 import MarketplaceUI from "../components/MarketplaceUI";
 
-// -------------------------------------------------------------
-// STANDALONE USER NAVBAR
-// -------------------------------------------------------------
+
 function UserNavbar({ user, setActiveTab }) {
   return (
     <nav className="h-20 bg-background/95 backdrop-blur-md border-b fixed top-0 left-0 right-0 z-40 px-6 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
           <span className="text-white font-black text-xl">S</span>
         </div>
         <div className="hidden md:flex flex-col cursor-pointer" onClick={() => setActiveTab('overview')}>
-           <span className="font-black text-primary leading-tight">SLIIT EMS</span>
-           <span className="text-[10px] uppercase font-bold text-secondary tracking-widest">Marketplace</span>
+           <span className="font-black text-primary leading-tight tracking-tight">SLIIT MARKETPLACE</span>
+           <span className="text-[10px] uppercase font-black text-secondary tracking-widest">Digital Campus</span>
         </div>
       </div>
       
       <div className="hidden md:flex relative max-w-md w-full mx-10">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input type="text" placeholder="Search items, events, users..." className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-muted/30 border-transparent focus:bg-white focus:border-border focus:ring-2 focus:ring-secondary/20 transition-all" />
+        <input type="text" placeholder="Search items, events, users..." className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-muted/30 border-2 border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all font-medium" />
       </div>
 
       <div className="flex items-center gap-6">
@@ -58,10 +57,10 @@ function UserNavbar({ user, setActiveTab }) {
         
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-foreground">{user?.firstName || 'Student'}</p>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{user?.faculty || 'Faculty'}</p>
+            <p className="text-sm font-black text-primary tracking-tight leading-none mb-1">{user?.firstName || 'Student'}</p>
+            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{user?.faculty || 'Faculty'}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-110 transition-transform">
              <User className="text-white" size={20} />
           </div>
         </div>
@@ -70,13 +69,12 @@ function UserNavbar({ user, setActiveTab }) {
   );
 }
 
-
 function UserSidebar({ activeTab, setActiveTab }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
-    localStorage.removeItem("userInfo");
+    localStorage.removeItem("std_userInfo");
     navigate("/");
   };
 
@@ -109,9 +107,9 @@ function UserSidebar({ activeTab, setActiveTab }) {
           </button>
         ))}
       </div>
-      <div className="mt-auto p-4 border-t border-white/10">
-        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/50 hover:bg-red-500/20 hover:text-red-400 transition-all font-bold">
-          <LogOut size={18} /> Logout Session
+      <div className="mt-auto p-4 border-t border-white/5">
+        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white/40 hover:bg-red-500/20 hover:text-white transition-all font-black text-xs uppercase tracking-widest group">
+          <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" /> Logout Session
         </button>
       </div>
     </aside>
@@ -123,12 +121,12 @@ function UserSidebar({ activeTab, setActiveTab }) {
 // -------------------------------------------------------------
 export default function UserDasboardd() {
   const navigate = useNavigate();
-  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
   const [activeTab, setActiveTab] = useState("overview");
   
   // Aggressive Session Validation
   React.useEffect(() => {
-    if (!userInfo.token) {
+    if (!userInfo.token || userInfo.role !== 'user') {
       navigate('/');
       return;
     }
@@ -137,22 +135,50 @@ export default function UserDasboardd() {
         const res = await fetch("/api/users/me", {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });
-        if (res.status === 401) {
-          alert('Session Expired: You have safely logged in from another device.');
-          localStorage.removeItem("userInfo");
+        if (res.status === 401 || res.status === 403) {
+          alert('Session Expired: Security mechanism detected a new login. You have been securely signed out.');
+          localStorage.removeItem("std_userInfo");
           navigate('/');
+        } else if (res.ok) {
+           const userData = await res.json();
+           if (userData.role !== 'user') {
+              alert('Unauthorized access. Redirecting...');
+              navigate('/');
+           }
         }
       } catch (err) {
         console.error('Session validation error:', err);
       }
     };
     verifySession();
-  }, [navigate, userInfo.token]);
+  }, [navigate, userInfo.token, userInfo.role]);
 
-  const featuredEvents = [
-    { id: "f1", title: "Tech Conference", date: "Mar 25", attendees: 450, category: "Technology", imageUrl: "https://images.unsplash.com/photo-1582192904915?w=500" },
-    { id: "f2", title: "AI Workshop", date: "Mar 28", attendees: 150, category: "Technology", imageUrl: "https://images.unsplash.com/photo-1591453089816?w=500" },
-  ];
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const { data } = await axios.get("/api/events");
+        // Map backend Event model to FeaturedEvents expected props
+        const mappedEvents = data.data.map(event => ({
+          id: event._id,
+          title: event.name,
+          date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          attendees: Math.floor(Math.random() * 200) + 50, // Realistic placeholder for now
+          category: event.category,
+          imageUrl: event.imageUrl,
+          description: event.description
+        }));
+        setEvents(mappedEvents);
+      } catch (error) {
+        console.error("Error fetching live events:", error);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
@@ -174,12 +200,14 @@ export default function UserDasboardd() {
 
           {activeTab === 'overview' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mb-2">
-                <h2 className="text-2xl font-black text-primary">Discover Campus Events</h2>
-                <p className="text-muted-foreground font-medium">Join the latest activities across the university</p>
-              </div>
-              <MarketplaceHeader onSearch={() => {}} onCategoryChange={() => {}} selectedCategory="all" />
-              <FeaturedEvents events={featuredEvents} />
+              <MarketplaceHeader onSearch={() => {}} />
+              {loadingEvents ? (
+                <div className="flex justify-center py-10">
+                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <FeaturedEvents events={events} onViewAll={() => setActiveTab('events')} />
+              )}
             </div>
           )}
 
@@ -204,3 +232,4 @@ export default function UserDasboardd() {
     </div>
   );
 }
+

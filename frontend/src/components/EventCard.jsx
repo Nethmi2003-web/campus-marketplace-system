@@ -113,16 +113,16 @@ export function EventCard({
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-2 hover:border-primary/30 bg-card">
-      <div className="relative overflow-hidden h-48">
+    <Card className="group overflow-hidden hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all duration-700 border-2 border-white backdrop-blur-xl hover:border-primary/20 bg-card/40 rounded-[2.5rem] flex flex-col shadow-xl shadow-black/5">
+      <div className="relative overflow-hidden h-52 rounded-t-[2.5rem]">
         <img
           src={imageUrl}
           alt={title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         {isFeatured && (
-          <Badge className="absolute top-3 left-3 bg-secondary text-white border-0 shadow-lg">
+          <Badge className="absolute top-4 left-4 bg-secondary text-white border-0 shadow-xl px-4 py-1.5 font-black uppercase tracking-widest text-[10px]">
             ⭐ Featured
           </Badge>
         )}
@@ -134,15 +134,15 @@ export function EventCard({
         >
           {statusConfig[status].text}
         </Badge>
-        <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
           <button
             onClick={() => setIsLiked(!isLiked)}
             className={cn(
-              "w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-transform",
-              isLiked && "bg-red-500"
+              "w-10 h-10 rounded-2xl bg-white shadow-xl flex items-center justify-center hover:scale-110 transition-transform",
+              isLiked ? "bg-red-500 text-white" : "text-gray-700 hover:text-red-500"
             )}
           >
-            <Heart className={cn("w-4 h-4", isLiked ? "fill-white text-white" : "text-gray-700")} />
+            <Heart className={cn("w-5 h-5", isLiked && "fill-white")} />
           </button>
           <button className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-transform">
             <Share2 className="w-4 h-4 text-gray-700" />
@@ -152,11 +152,11 @@ export function EventCard({
           {category}
         </Badge>
       </div>
-      <div className="p-5">
-        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+      <div className="p-6 flex-1 flex flex-col">
+        <h3 className="text-xl font-black text-primary mb-3 line-clamp-2 group-hover:text-secondary transition-colors tracking-tight leading-tight">
           {title}
         </h3>
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+        <p className="text-sm text-muted-foreground mb-6 line-clamp-2 font-medium leading-relaxed">
           {description}
         </p>
         <div className="grid grid-cols-2 gap-3 mb-4">
@@ -188,52 +188,22 @@ export function EventCard({
             </div>
           </div>
         </div>
-        <div className="mb-4">
-          <div className="flex items-center justify-between text-sm mb-2">
-            <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-primary" />
-              <span className="font-medium text-foreground">
-                {attendees} / {maxAttendees} Registered
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground">{attendancePercentage.toFixed(0)}%</span>
-          </div>
-          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full transition-all duration-500 rounded-full",
-                attendancePercentage < 50 ? "bg-green-500" :
-                attendancePercentage < 80 ? "bg-secondary" : "bg-red-500"
-              )}
-              style={{ width: `${attendancePercentage}%` }}
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-between pt-4 border-t border-border">
+        <div className="flex items-center justify-between pt-6 border-t border-dashed border-muted-foreground/20 mt-auto">
           <div>
             {price > 0 ? (
               <div>
-                <p className="text-xs text-muted-foreground">Registration Fee</p>
-                <p className="text-xl font-semibold text-primary">LKR {price}</p>
+                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">Registration Fee</p>
+                <p className="text-2xl font-black text-primary tracking-tight">LKR {price.toLocaleString()}</p>
               </div>
             ) : (
-              <Badge className="bg-green-500/10 text-green-700 border-green-500/20">
+              <Badge className="bg-green-50 text-green-600 border-none px-4 py-1.5 font-black uppercase tracking-widest text-[10px]">
                 Free Event
               </Badge>
             )}
           </div>
-          <Button 
-            className={cn(
-              "gap-2 shadow-lg transition-all duration-300",
-              status === "full" 
-                ? "bg-muted text-muted-foreground cursor-not-allowed" 
-                : "bg-primary hover:bg-primary/90 hover:scale-105"
-            )}
-            disabled={status === "full"}
-          >
-            {status === "full" ? "Full" : "Register"}
-            <ExternalLink className="w-4 h-4" />
-          </Button>
+          <button className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-lg shadow-primary/5">
+             <ExternalLink size={20} />
+          </button>
         </div>
       </div>
     </Card>

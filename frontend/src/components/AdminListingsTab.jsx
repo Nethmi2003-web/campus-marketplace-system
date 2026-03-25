@@ -35,7 +35,7 @@ export function AdminListingsTab() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
       try {
-        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+        const userInfo = JSON.parse(localStorage.getItem("admin_userInfo") || "{}");
         await axios.delete(`/api/items/${id}`, {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });

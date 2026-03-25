@@ -1,9 +1,6 @@
 import { cn } from '../lib/utils';
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// Replaced ui folder import
-// Replaced ui folder import
-// Replaced ui folder import
 import { UserPlus } from "lucide-react";
 
 
@@ -124,8 +121,8 @@ function RegisterPage() {
         throw new Error(data.message || "Registration failed");
       }
 
-      // Store user token/details securely
-      localStorage.setItem("userInfo", JSON.stringify(data));
+      // Store student details securely in isolated key
+      localStorage.setItem("std_userInfo", JSON.stringify(data));
       navigate("/user-dashboard");
     } catch (err) {
       setError(err.message);

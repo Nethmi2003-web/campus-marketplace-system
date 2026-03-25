@@ -4,12 +4,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Users, ShoppingBag, AlertTriangle, TrendingUp, ShieldCheck, 
   ArrowUpRight, ArrowDownRight, LayoutDashboard,
-  LogOut, Bell, Settings, Activity, Receipt, BadgeDollarSign
+  LogOut, Bell, Settings, Activity, Receipt, BadgeDollarSign, Calendar
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { AdminPricingTab } from "../components/AdminPricingTab";
 import { AdminTransactionsTab } from "../components/AdminTransactionsTab";
 import { AdminListingsTab } from "../components/AdminListingsTab";
+import { AdminEventsTab } from "../components/AdminEventsTab";
 
 // Removed IoT specific chart imports
 
@@ -47,7 +48,7 @@ function AdminSidebar({ activeTab, setActiveTab }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("userInfo");
+    localStorage.removeItem("admin_userInfo");
     navigate("/");
   };
 
@@ -57,6 +58,7 @@ function AdminSidebar({ activeTab, setActiveTab }) {
     { id: "listings",     label: "Active Listings",      icon: ShoppingBag },
     { id: "transactions", label: "Transactions",         icon: Receipt },
     { id: "pricing",      label: "Pricing Management",   icon: BadgeDollarSign },
+    { id: "events",       label: "Campus Events",        icon: Calendar },
     { id: "moderation",   label: "Trust & Safety",       icon: AlertTriangle },
     { id: "settings",     label: "Platform Settings",    icon: Settings },
   ];
@@ -92,12 +94,12 @@ function AdminSidebar({ activeTab, setActiveTab }) {
 // -------------------------------------------------------------
 export default function AdmnDashboardd() {
   const navigate = useNavigate();
-  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const userInfo = JSON.parse(localStorage.getItem("admin_userInfo") || "{}");
   const [activeTab, setActiveTab] = useState("overview");
   
   // Aggressive Session Validation
   React.useEffect(() => {
-    if (!userInfo.token) {
+    if (!userInfo.token || userInfo.role !== 'admin') {
       navigate('/');
       return;
     }
@@ -106,10 +108,16 @@ export default function AdmnDashboardd() {
         const res = await fetch("/api/users/me", {
           headers: { Authorization: `Bearer ${userInfo.token}` }
         });
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           alert('Admin Session Expired: Security mechanism detected a new login. You have been securely signed out.');
-          localStorage.removeItem("userInfo");
+          localStorage.removeItem("admin_userInfo");
           navigate('/');
+        } else if (res.ok) {
+           const userData = await res.json();
+           if (userData.role !== 'admin') {
+              alert('Unauthorized access. Redirecting...');
+              navigate('/');
+           }
         }
       } catch (err) {
         console.error('Session validation error:', err);
@@ -230,6 +238,9 @@ export default function AdmnDashboardd() {
               </div>
             </div>
           )}
+
+          {/* ── EVENTS ── */}
+          {activeTab === 'events' && <AdminEventsTab />}
 
           {/* ── SETTINGS ── */}
           {activeTab === 'settings' && (
