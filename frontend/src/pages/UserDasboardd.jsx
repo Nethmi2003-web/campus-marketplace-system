@@ -16,7 +16,6 @@ import { UserCartTab } from "../components/UserCartTab";
 import { UserWishlistTab } from "../components/UserWishlistTab";
 import { EventCard } from "../components/EventCard";
 import MarketplaceUI from "../components/MarketplaceUI";
-import { UserEventsTab } from "../components/UserEventsTab";
 
 
 function UserNavbar({ user, setActiveTab }) {
@@ -70,8 +69,14 @@ function UserNavbar({ user, setActiveTab }) {
   );
 }
 
+function UserSidebar({ activeTab, setActiveTab }) {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-
+  const handleLogout = () => {
+    localStorage.removeItem("userInfo");
+    navigate("/");
+  };
 
   const tabs = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
@@ -109,7 +114,7 @@ function UserNavbar({ user, setActiveTab }) {
       </div>
     </aside>
   );
-
+}
 
 // -------------------------------------------------------------
 // MAIN USER DASHBOARD
@@ -221,3 +226,4 @@ export default function UserDasboardd() {
     </div>
   );
 }
+
