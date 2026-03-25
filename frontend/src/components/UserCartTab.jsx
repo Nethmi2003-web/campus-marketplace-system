@@ -138,7 +138,7 @@ export function UserCartTab() {
           <Info size={40} />
         </div>
         <div className="space-y-2 max-w-sm">
-          <h3 className="text-2xl font-black text-red-500">Cart Issue</h3>
+          <h1 className="text-3xl font-black text-red-500 mb-2">Cart Issue</h1>
           <p className="text-muted-foreground font-medium">{error}</p>
         </div>
       </div>
@@ -152,7 +152,7 @@ export function UserCartTab() {
           <ShoppingBag size={48} />
         </div>
         <div className="space-y-2 max-w-sm">
-          <h3 className="text-2xl font-black text-primary">Your cart is empty</h3>
+          <h1 className="text-3xl font-black text-primary mb-2">Your bag is empty</h1>
           <p className="text-muted-foreground font-medium">Looks like you haven't added anything to your cart yet. Explore the marketplace to find great deals!</p>
         </div>
         <button className="px-8 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all">
@@ -168,9 +168,9 @@ export function UserCartTab() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Items List */}
         <div className="xl:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-primary tracking-tight">Shopping Cart</h2>
-            <span className="text-sm font-bold text-muted-foreground">{items.length} Items</span>
+          <div className="flex flex-col gap-2 mb-8">
+            <h1 className="text-3xl font-black text-primary mb-2">Shopping Cart</h1>
+            <p className="text-muted-foreground font-medium">You have {items.length} items in your campus bag</p>
           </div>
 
           <div className="space-y-4">

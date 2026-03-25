@@ -188,27 +188,6 @@ export function EventCard({
             </div>
           </div>
         </div>
-        <div className="mb-4">
-          <div className="flex items-center justify-between text-sm mb-2">
-            <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-primary" />
-              <span className="font-medium text-foreground">
-                {attendees} / {maxAttendees} Registered
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground">{attendancePercentage.toFixed(0)}%</span>
-          </div>
-          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full transition-all duration-500 rounded-full",
-                attendancePercentage < 50 ? "bg-green-500" :
-                attendancePercentage < 80 ? "bg-secondary" : "bg-red-500"
-              )}
-              style={{ width: `${attendancePercentage}%` }}
-            />
-          </div>
-        </div>
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div>
             {price > 0 ? (
@@ -222,18 +201,6 @@ export function EventCard({
               </Badge>
             )}
           </div>
-          <Button 
-            className={cn(
-              "gap-2 shadow-lg transition-all duration-300",
-              status === "full" 
-                ? "bg-muted text-muted-foreground cursor-not-allowed" 
-                : "bg-primary hover:bg-primary/90 hover:scale-105"
-            )}
-            disabled={status === "full"}
-          >
-            {status === "full" ? "Full" : "Register"}
-            <ExternalLink className="w-4 h-4" />
-          </Button>
         </div>
       </div>
     </Card>

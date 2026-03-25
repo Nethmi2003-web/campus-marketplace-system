@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, User, Tag, Clock, CheckCircle, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, Tag, Loader2 } from "lucide-react";
 import axios from "axios";
 import { cn } from "../lib/utils";
 
@@ -95,9 +95,7 @@ function InlineItemCard({
 
   const handleLikeClick = (e) => {
     e.stopPropagation();
-    const newLikedState = !isLiked;
-    setIsLiked(newLikedState);
-    onToggleWishlist(id, newLikedState);
+    onToggleWishlist(id, !isLiked);
   };
 
   return (
@@ -193,18 +191,6 @@ function InlineItemCard({
             <p className="text-2xl font-black text-primary">LKR {price.toLocaleString()}</p>
           </div>
           
-          <div className="flex flex-col items-end">
-             <div className="flex items-center gap-1.5 mb-1 cursor-pointer hover:opacity-80 transition-opacity">
-                <span className="text-[11px] font-medium text-foreground">{seller || "Anonym"}</span>
-                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
-                   <User size={14} className="text-muted-foreground" />
-                </div>
-             </div>
-             <div className="flex items-center gap-1 text-[10px] text-green-600 font-bold">
-                <CheckCircle size={10} />
-                <span>Verified Seller</span>
-             </div>
-          </div>
         </div>
       </div>
     </div>
@@ -399,7 +385,7 @@ export default function MarketplaceUI() {
               key={item._id} 
               id={item._id}
               {...item} 
-              seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Anonymous"}
+              seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Student"}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               isLiked={wishlistIds.has(item._id)}

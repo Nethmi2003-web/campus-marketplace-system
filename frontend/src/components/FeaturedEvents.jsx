@@ -91,7 +91,7 @@ Button.displayName = "Button";
 // Replaced local ui import
 // Replaced local ui import
 
-export function FeaturedEvents({ events }) {
+export function FeaturedEvents({ events, onViewAll }) {
   if (events.length === 0) return null;
 
   const mainEvent = events[0];
@@ -109,7 +109,7 @@ export function FeaturedEvents({ events }) {
             <p className="text-sm text-muted-foreground">Don't miss these trending events</p>
           </div>
         </div>
-        <Button variant="outline" className="gap-2 hidden md:flex">
+        <Button variant="outline" className="gap-2 hidden md:flex" onClick={onViewAll}>
           View All
           <ArrowRight className="w-4 h-4" />
         </Button>
@@ -144,19 +144,7 @@ export function FeaturedEvents({ events }) {
                   <Calendar className="w-4 h-4" />
                   <span className="text-sm font-medium">{mainEvent.date}</span>
                 </div>
-                <div className="flex items-center gap-2 text-white">
-                  <Users className="w-4 h-4" />
-                  <span className="text-sm font-medium">{mainEvent.attendees}+ attendees</span>
-                </div>
-                <div className="flex items-center gap-2 text-secondary">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm font-medium">Trending</span>
-                </div>
               </div>
-              <Button className="bg-secondary hover:bg-secondary/90 w-fit shadow-xl">
-                Register Now
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
             </div>
           </div>
         </Card>
@@ -178,14 +166,9 @@ export function FeaturedEvents({ events }) {
                   <h4 className="font-semibold text-white mb-2 line-clamp-2">
                     {event.title}
                   </h4>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-white/90 text-sm">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{event.date}</span>
-                    </div>
-                    <Button size="sm" className="bg-secondary hover:bg-secondary/90 h-8">
-                      Register
-                    </Button>
+                  <div className="flex items-center gap-2 text-white/90 text-sm">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{event.date}</span>
                   </div>
                 </div>
               </div>

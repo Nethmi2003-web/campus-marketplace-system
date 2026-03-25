@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { cn } from '../lib/utils';
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -15,10 +16,9 @@ import { UserCartTab } from "../components/UserCartTab";
 import { UserWishlistTab } from "../components/UserWishlistTab";
 import { EventCard } from "../components/EventCard";
 import MarketplaceUI from "../components/MarketplaceUI";
+import { UserEventsTab } from "../components/UserEventsTab";
 
-// -------------------------------------------------------------
-// STANDALONE USER NAVBAR
-// -------------------------------------------------------------
+
 function UserNavbar({ user, setActiveTab }) {
   return (
     <nav className="h-20 bg-background/95 backdrop-blur-md border-b fixed top-0 left-0 right-0 z-40 px-6 flex items-center justify-between">
@@ -27,7 +27,7 @@ function UserNavbar({ user, setActiveTab }) {
           <span className="text-white font-black text-xl">S</span>
         </div>
         <div className="hidden md:flex flex-col cursor-pointer" onClick={() => setActiveTab('overview')}>
-           <span className="font-black text-primary leading-tight">SLIIT EMS</span>
+           <span className="font-black text-primary leading-tight">SLIIT MARKETPLACE</span>
            <span className="text-[10px] uppercase font-bold text-secondary tracking-widest">Marketplace</span>
         </div>
       </div>
@@ -71,14 +71,7 @@ function UserNavbar({ user, setActiveTab }) {
 }
 
 
-function UserSidebar({ activeTab, setActiveTab }) {
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  const handleLogout = () => {
-    localStorage.removeItem("userInfo");
-    navigate("/");
-  };
 
   const tabs = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
@@ -116,7 +109,7 @@ function UserSidebar({ activeTab, setActiveTab }) {
       </div>
     </aside>
   );
-}
+
 
 // -------------------------------------------------------------
 // MAIN USER DASHBOARD
@@ -149,10 +142,32 @@ export default function UserDasboardd() {
     verifySession();
   }, [navigate, userInfo.token]);
 
-  const featuredEvents = [
-    { id: "f1", title: "Tech Conference", date: "Mar 25", attendees: 450, category: "Technology", imageUrl: "https://images.unsplash.com/photo-1582192904915?w=500" },
-    { id: "f2", title: "AI Workshop", date: "Mar 28", attendees: 150, category: "Technology", imageUrl: "https://images.unsplash.com/photo-1591453089816?w=500" },
-  ];
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const { data } = await axios.get("/api/events");
+        // Map backend Event model to FeaturedEvents expected props
+        const mappedEvents = data.data.map(event => ({
+          id: event._id,
+          title: event.name,
+          date: new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          attendees: Math.floor(Math.random() * 200) + 50, // Realistic placeholder for now
+          category: event.category,
+          imageUrl: event.imageUrl,
+          description: event.description
+        }));
+        setEvents(mappedEvents);
+      } catch (error) {
+        console.error("Error fetching live events:", error);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
@@ -174,12 +189,14 @@ export default function UserDasboardd() {
 
           {activeTab === 'overview' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mb-2">
-                <h2 className="text-2xl font-black text-primary">Discover Campus Events</h2>
-                <p className="text-muted-foreground font-medium">Join the latest activities across the university</p>
-              </div>
-              <MarketplaceHeader onSearch={() => {}} onCategoryChange={() => {}} selectedCategory="all" />
-              <FeaturedEvents events={featuredEvents} />
+              <MarketplaceHeader onSearch={() => {}} />
+              {loadingEvents ? (
+                <div className="flex justify-center py-10">
+                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <FeaturedEvents events={events} onViewAll={() => setActiveTab('events')} />
+              )}
             </div>
           )}
 

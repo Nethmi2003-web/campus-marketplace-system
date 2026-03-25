@@ -4,12 +4,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Users, ShoppingBag, AlertTriangle, TrendingUp, ShieldCheck, 
   ArrowUpRight, ArrowDownRight, LayoutDashboard,
-  LogOut, Bell, Settings, Activity, Receipt, BadgeDollarSign
+  LogOut, Bell, Settings, Activity, Receipt, BadgeDollarSign, Calendar
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { AdminPricingTab } from "../components/AdminPricingTab";
 import { AdminTransactionsTab } from "../components/AdminTransactionsTab";
 import { AdminListingsTab } from "../components/AdminListingsTab";
+import { AdminEventsTab } from "../components/AdminEventsTab";
 
 // Removed IoT specific chart imports
 
@@ -57,6 +58,7 @@ function AdminSidebar({ activeTab, setActiveTab }) {
     { id: "listings",     label: "Active Listings",      icon: ShoppingBag },
     { id: "transactions", label: "Transactions",         icon: Receipt },
     { id: "pricing",      label: "Pricing Management",   icon: BadgeDollarSign },
+    { id: "events",       label: "Campus Events",        icon: Calendar },
     { id: "moderation",   label: "Trust & Safety",       icon: AlertTriangle },
     { id: "settings",     label: "Platform Settings",    icon: Settings },
   ];
@@ -230,6 +232,9 @@ export default function AdmnDashboardd() {
               </div>
             </div>
           )}
+
+          {/* ── EVENTS ── */}
+          {activeTab === 'events' && <AdminEventsTab />}
 
           {/* ── SETTINGS ── */}
           {activeTab === 'settings' && (
