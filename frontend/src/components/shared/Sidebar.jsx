@@ -35,12 +35,6 @@ const navigationItems = [
     description: "List a new item"
   },
   {
-    id: "/transactions",
-    name: "Transactions",
-    icon: History,
-    description: "Order history"
-  },
-  {
     id: "/trust",
     name: "Trust & Security",
     icon: ShieldCheck,

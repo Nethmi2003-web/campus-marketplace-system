@@ -130,3 +130,65 @@ exports.updateOrderStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Get user spending analytics
+// @route   GET /api/orders/analytics
+// @access  Private
+exports.getUserAnalytics = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ user: req.user.id, paymentStatus: 'completed' });
+
+    // 1. Basic Stats
+    const totalSpent = orders.reduce((acc, order) => acc + order.totalAmount, 0);
+    const platformFees = orders.reduce((acc, order) => acc + order.platformFee, 0);
+    const itemsPurchased = orders.reduce((acc, order) => 
+      acc + order.items.reduce((itemAcc, item) => itemAcc + item.quantity, 0), 0);
+
+    // 2. Monthly Spending (Last 6 Months)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyDataMap = {};
+    
+    // Initialize last 6 months
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthName = months[d.getMonth()];
+      monthlyDataMap[monthName] = 0;
+    }
+
+    orders.forEach(order => {
+      const date = new Date(order.createdAt);
+      const monthName = months[date.getMonth()];
+      if (monthlyDataMap.hasOwnProperty(monthName)) {
+        monthlyDataMap[monthName] += order.totalAmount;
+      }
+    });
+
+    const monthlySpending = Object.keys(monthlyDataMap).map(month => ({
+      month,
+      amount: monthlyDataMap[month]
+    }));
+
+    // 3. Pending Stats
+    const pendingOrders = await Order.countDocuments({ user: req.user.id, orderStatus: 'pending' });
+
+    // 4. Completed Orders List (Detailed)
+    const completedOrdersList = await Order.find({ user: req.user.id, paymentStatus: 'completed' })
+      .populate('items.product', 'title imageUrl price category')
+      .sort('-createdAt');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalSpent,
+        itemsPurchased,
+        platformFees,
+        monthlySpending,
+        pendingOrders,
+        completedOrders: completedOrdersList
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};

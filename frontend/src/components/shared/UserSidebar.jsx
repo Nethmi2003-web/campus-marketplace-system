@@ -28,7 +28,6 @@ export function UserSidebar({ activeTab, setActiveTab }) {
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
     { id: "marketplace", label: "Marketplace", icon: ShoppingBag },
     { id: "cart", label: "My Cart", icon: ShoppingCart },
-    { id: "transactions", label: "Transactions", icon: History },
     { id: "analytics", label: "My Analytics", icon: BarChart2 },
     { id: "reports", label: "My Reports", icon: FileText },
     { id: "wishlist", label: "Wishlist", icon: Heart },

@@ -5,7 +5,7 @@ import {
   Heart, ShoppingCart, Trash2, Tag, Clock, 
   PackageSearch, Loader2, X 
 } from "lucide-react";
-import { Button } from "./MarketplaceUI"; // Reuse the premium Button
+import { Button } from "./shared/UI"; // Use the shared premium UI library
 
 export function UserWishlistTab() {
   const [items, setItems] = useState([]);
