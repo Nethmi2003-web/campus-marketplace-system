@@ -4,14 +4,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Building2, Search, Bell, ShoppingCart, User, LayoutDashboard,
   ShoppingBag, PlusCircle, History, ShieldCheck, LogOut,
-  BarChart2, FileText, Heart
+  Heart
 } from "lucide-react";
 
 import { MarketplaceHeader } from "../components/MarketplaceHeader";
 import { FeaturedEvents } from "../components/FeaturedEvents";
 
-import { UserAnalyticsTab } from "../components/UserAnalyticsTab";
-import { UserReportsTab } from "../components/UserReportsTab";
+import { UserTransactionsTab } from "../components/UserTransactionsTab";
 import { UserCartTab } from "../components/UserCartTab";
 import { UserWishlistTab } from "../components/UserWishlistTab";
 import { EventCard } from "../components/EventCard";
@@ -87,8 +86,6 @@ function UserSidebar({ activeTab, setActiveTab }) {
     { id: "cart", label: "My Cart", icon: ShoppingCart },
     { id: "sell", label: "Sell Item", icon: PlusCircle },
     { id: "transactions", label: "Transactions", icon: History },
-    { id: "analytics", label: "My Analytics", icon: BarChart2 },
-    { id: "reports", label: "My Reports", icon: FileText },
     { id: "wishlist", label: "Wishlist", icon: Heart },
     { id: "profile", label: "Profile Settings", icon: User },
   ];
@@ -165,22 +162,11 @@ export default function UserDasboardd() {
         <UserSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         
         <main className="flex-1 min-w-0 lg:ml-64 p-4 md:p-8 lg:p-10 space-y-8 animate-in fade-in duration-700 overflow-x-hidden">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 transition-all duration-500">
               <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-black text-primary tracking-tight">Welcome, {userInfo?.firstName || 'Student'}!</h1>
-                  <p className="text-muted-foreground font-medium">Manage your marketplace activity and campus life</p>
+                  <h1 className="text-4xl font-black text-primary tracking-tight">Welcome, {userInfo?.firstName || 'Student'}!</h1>
+                  <p className="text-muted-foreground font-medium text-lg">Manage your marketplace activity and campus life</p>
               </div>
-          </div>
-
-          <div className="overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
-            <div className="flex gap-2 p-1 bg-muted/50 rounded-xl w-max">
-              <button onClick={() => setActiveTab('overview')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'overview' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Overview</button>
-              <button onClick={() => setActiveTab('marketplace')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'marketplace' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Marketplace</button>
-              <button onClick={() => setActiveTab('cart')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'cart' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Cart</button>
-              <button onClick={() => setActiveTab('analytics')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'analytics' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Analytics</button>
-              <button onClick={() => setActiveTab('reports')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'reports' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>My Reports</button>
-              <button onClick={() => setActiveTab('wishlist')} className={cn("px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap", activeTab === 'wishlist' ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}>Wishlist</button>
-            </div>
           </div>
 
           {activeTab === 'marketplace' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><MarketplaceUI /></div>}
@@ -197,33 +183,7 @@ export default function UserDasboardd() {
             </div>
           )}
 
-          {activeTab === 'analytics' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><UserAnalyticsTab /></div>}
-          {activeTab === 'reports' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><UserReportsTab /></div>}
-          
-          {/* Placeholder Tabs */}
-          {activeTab === 'sell' && (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
-               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center text-primary">
-                  <PlusCircle size={40} />
-               </div>
-               <div>
-                  <h3 className="text-xl font-bold text-primary">List an Item</h3>
-                  <p className="text-muted-foreground">The selling feature is coming soon to the campus marketplace!</p>
-               </div>
-            </div>
-          )}
-          
-          {activeTab === 'transactions' && (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
-               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center text-primary">
-                  <History size={40} />
-               </div>
-               <div>
-                  <h3 className="text-xl font-bold text-primary">Purchase History</h3>
-                  <p className="text-muted-foreground">Your transaction history will appear here once you start trading.</p>
-               </div>
-            </div>
-          )}
+          {activeTab === 'transactions' && <UserTransactionsTab />}
           
           {activeTab === 'profile' && (
             <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">

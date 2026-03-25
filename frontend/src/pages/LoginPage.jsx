@@ -148,7 +148,7 @@ function LoginPage() {
                  value={formData.email}
                  onChange={(e) => setFormData({...formData, email: e.target.value})}
                  required
-                 placeholder="admin@sliit.lk" 
+                 placeholder="admin@my.sliit.lk" 
                  className="rounded-xl h-12 border-muted bg-muted/30 focus:bg-white transition-all" 
               />
             </div>
