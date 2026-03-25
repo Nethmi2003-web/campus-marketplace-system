@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, User, Tag, Clock, CheckCircle, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, Tag, Loader2 } from "lucide-react";
 import axios from "axios";
 import { cn } from "../lib/utils";
 
@@ -94,9 +94,7 @@ function InlineItemCard({
 
   const handleLikeClick = (e) => {
     e.stopPropagation();
-    const newLikedState = !isLiked;
-    setIsLiked(newLikedState);
-    onToggleWishlist(id, newLikedState);
+    onToggleWishlist(id, !isLiked);
   };
 
   return (
@@ -162,16 +160,12 @@ function InlineItemCard({
           </h3>
         </div>
 
-        <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
-           <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md">
-              <Tag size={12} />
-              <span>{condition}</span>
-           </div>
-           <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md">
-              <Clock size={12} />
-              <span>2 days ago</span>
-           </div>
-        </div>
+         <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md">
+               <Tag size={12} />
+               <span>{condition}</span>
+            </div>
+         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div>
@@ -179,18 +173,6 @@ function InlineItemCard({
             <p className="text-2xl font-black text-primary">LKR {price.toLocaleString()}</p>
           </div>
           
-          <div className="flex flex-col items-end">
-             <div className="flex items-center gap-1.5 mb-1 cursor-pointer hover:opacity-80 transition-opacity">
-                <span className="text-[11px] font-medium text-foreground">{seller || "Anonym"}</span>
-                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
-                   <User size={14} className="text-muted-foreground" />
-                </div>
-             </div>
-             <div className="flex items-center gap-1 text-[10px] text-green-600 font-bold">
-                <CheckCircle size={10} />
-                <span>Verified Seller</span>
-             </div>
-          </div>
         </div>
       </div>
     </div>
@@ -337,7 +319,7 @@ export default function MarketplaceUI() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 p-4 md:p-6 pb-24 md:pb-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-primary mb-2">Campus Marketplace</h1>
+          <h1 className="text-3xl font-black text-primary tracking-tight mb-2">Campus Marketplace</h1>
           <p className="text-muted-foreground font-medium">Showing {filteredItems.length} items currently available</p>
         </div>
         
@@ -387,7 +369,7 @@ export default function MarketplaceUI() {
               key={item._id} 
               id={item._id}
               {...item} 
-              seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Anonymous"}
+              seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Student"}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               isLiked={wishlistIds.has(item._id)}

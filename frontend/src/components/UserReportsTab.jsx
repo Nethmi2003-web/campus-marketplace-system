@@ -71,8 +71,8 @@ export function UserReportsTab() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-2 mb-6">
-          <h2 className="text-2xl font-black text-primary">Transaction Reports</h2>
+      <div className="flex flex-col gap-2 mb-8">
+          <h1 className="text-3xl font-black text-primary tracking-tight mb-2">Transaction Reports</h1>
           <p className="text-muted-foreground font-medium">Your marketplace activity history</p>
       </div>
 

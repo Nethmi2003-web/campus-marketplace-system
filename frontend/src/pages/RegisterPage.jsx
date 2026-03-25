@@ -1,9 +1,6 @@
 import { cn } from '../lib/utils';
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// Replaced ui folder import
-// Replaced ui folder import
-// Replaced ui folder import
 import { UserPlus } from "lucide-react";
 
 
