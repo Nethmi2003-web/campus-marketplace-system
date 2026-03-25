@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken');
 const UserModel = require('../models/User');
 const User = UserModel.default || UserModel;
 
-// Generate JWT with Session Versioning for concurrent logout protection
-const generateToken = (id, sessionVersion = 0) =>
-  jwt.sign({ id, sessionVersion }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+// Generate standard JWT token without aggressive concurrent tracking
+const generateToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
 
 // @desc  Register new user
 // @route POST /api/users/register
@@ -46,7 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
     lastName: user.lastName,
     universityEmail: user.universityEmail,
     role: user.role,
-    token: generateToken(user._id, user.sessionVersion || 0),
+    token: generateToken(user._id),
   });
 });
 
@@ -60,17 +60,13 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ universityEmail: email });
 
   if (user && (await user.matchPassword(password))) {
-    // Invalidate older sessions by forcing a new concurrent session integer
-    user.sessionVersion = (user.sessionVersion || 0) + 1;
-    await user.save();
-
     res.json({
       _id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       universityEmail: user.universityEmail,
       role: user.role,
-      token: generateToken(user._id, user.sessionVersion),
+      token: generateToken(user._id),
     });
   } else {
     res.status(401);

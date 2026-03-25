@@ -14,7 +14,21 @@ import AdmnDashboardd from './pages/AdmnDashboardd';
 // Components
 import MainLayout from './components/MainLayout';
 
+import React, { useEffect } from 'react';
+
 function App() {
+  // Global Cross-Tab Session Sync (Role-Isolated)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'admin_userInfo' || e.key === 'std_userInfo') {
+        // If a specific role session changes, refresh to sync all tabs of that role
+        window.location.reload();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>

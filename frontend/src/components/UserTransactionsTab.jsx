@@ -57,7 +57,7 @@ export function UserTransactionsTab() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
       const response = await axios.get("/api/orders/my", {
         headers: { Authorization: `Bearer ${userInfo.token}` }
       });
@@ -98,19 +98,24 @@ export function UserTransactionsTab() {
 
   if (loading) {
     return (
-      <div className="h-[60vh] flex flex-col items-center justify-start pt-32 space-y-4">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-        <p className="text-muted-foreground font-bold animate-pulse text-lg tracking-wide">Syncing transaction history...</p>
+      <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-xl font-bold text-primary animate-pulse tracking-tight text-lg">Syncing transaction history...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="h-[60vh] flex flex-col items-center justify-start pt-32 space-y-4">
-        <XCircle className="w-12 h-12 text-red-500" />
-        <p className="text-red-500 font-bold text-lg">{error}</p>
-        <button onClick={fetchOrders} className="px-8 py-3 bg-primary text-white rounded-2xl font-black shadow-lg hover:shadow-primary/20 transition-all hover:scale-105">Retry</button>
+      <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center shadow-xl shadow-red-100">
+          <XCircle className="w-10 h-10" />
+        </div>
+        <div className="space-y-2 max-w-sm">
+          <h1 className="text-3xl font-black text-red-500 mb-2 tracking-tight">Access Issue</h1>
+          <p className="text-muted-foreground font-medium">{error}</p>
+        </div>
+        <button onClick={fetchOrders} className="px-8 py-3 bg-red-500 text-white rounded-2xl font-black shadow-lg hover:shadow-red-200 transition-all hover:scale-105">Retry</button>
       </div>
     );
   }

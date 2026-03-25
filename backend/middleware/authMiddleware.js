@@ -17,12 +17,6 @@ const protect = asyncHandler(async (req, res, next) => {
         throw new Error('Not authorized, user not found');
       }
 
-      // Strict unique session lock: Prevents generic parallel active logins
-      if (req.user.sessionVersion !== decoded.sessionVersion) {
-        res.status(401);
-        throw new Error('Session Expired: You have safely logged in from another device.');
-      }
-      
       next();
     } catch (error) {
       res.status(401);
