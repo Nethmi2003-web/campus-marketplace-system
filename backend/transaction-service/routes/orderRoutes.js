@@ -3,7 +3,8 @@ const {
   createOrder,
   getMyOrders,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getUserAnalytics
 } = require('../controllers/orderController');
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router
   .get(adminOnly, getAllOrders); // Only admin can see all orders
 
 router.get('/my', getMyOrders);
+router.get('/analytics', getUserAnalytics);
 
 router.put('/:id/status', adminOnly, updateOrderStatus); // Only admin can update statuses
 
