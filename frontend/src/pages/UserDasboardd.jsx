@@ -2,12 +2,16 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { cn } from '../lib/utils';
 import { useNavigate, useLocation } from "react-router-dom";
-import { Building2, Search, Bell, ShoppingCart, User, Heart, History, PlusCircle} from "lucide-react";
-import { UserSidebar } from "../components/shared/UserSidebar";
+import { 
+  Building2, Search, Bell, ShoppingCart, User, LayoutDashboard,
+  ShoppingBag, PlusCircle, History, ShieldCheck, LogOut,
+  Heart
+} from "lucide-react";
+
 import { MarketplaceHeader } from "../components/MarketplaceHeader";
 import { FeaturedEvents } from "../components/FeaturedEvents";
-import { UserAnalyticsTab } from "../components/UserAnalyticsTab";
-import { UserReportsTab } from "../components/UserReportsTab";
+
+import { UserTransactionsTab } from "../components/UserTransactionsTab";
 import { UserCartTab } from "../components/UserCartTab";
 import { UserWishlistTab } from "../components/UserWishlistTab";
 import { EventCard } from "../components/EventCard";
@@ -69,6 +73,47 @@ function UserNavbar({ user, setActiveTab }) {
 
 
 
+  const tabs = [
+    { id: "overview", label: "Dashboard", icon: LayoutDashboard },
+    { id: "marketplace", label: "Marketplace", icon: ShoppingBag },
+    { id: "cart", label: "My Cart", icon: ShoppingCart },
+    { id: "sell", label: "Sell Item", icon: PlusCircle },
+    { id: "transactions", label: "Transactions", icon: History },
+    { id: "wishlist", label: "Wishlist", icon: Heart },
+    { id: "profile", label: "Profile Settings", icon: User },
+  ];
+
+  return (
+    <aside className="w-64 fixed left-0 top-20 bottom-0 bg-gradient-to-b from-[#001f5c] to-[#002a7a] p-4 flex flex-col hidden lg:flex rounded-tr-3xl">
+      <div className="space-y-3 flex-1 mt-6">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+               "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-bold text-sm group text-left",
+               tab.id === activeTab 
+                 ? "bg-gradient-to-r from-secondary to-secondary/80 text-white shadow-lg shadow-secondary/20 scale-105" 
+                 : "text-white/60 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <tab.icon size={20} className={cn(tab.id === activeTab ? "text-white" : "text-white/50 group-hover:text-white transition-colors")} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="mt-auto p-4 border-t border-white/10">
+        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/50 hover:bg-red-500/20 hover:text-red-400 transition-all font-bold">
+          <LogOut size={18} /> Logout Session
+        </button>
+      </div>
+    </aside>
+  );
+
+
+// -------------------------------------------------------------
+// MAIN USER DASHBOARD
+// -------------------------------------------------------------
 export default function UserDasboardd() {
   const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
@@ -132,13 +177,12 @@ export default function UserDasboardd() {
         <UserSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         
         <main className="flex-1 min-w-0 lg:ml-64 p-4 md:p-8 lg:p-10 space-y-8 animate-in fade-in duration-700 overflow-x-hidden">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 transition-all duration-500">
               <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl font-black text-primary tracking-tight">Welcome, {userInfo?.firstName || 'Student'}!</h1>
-                  <p className="text-muted-foreground font-medium">Manage your marketplace activity and campus life</p>
+                  <h1 className="text-4xl font-black text-primary tracking-tight">Welcome, {userInfo?.firstName || 'Student'}!</h1>
+                  <p className="text-muted-foreground font-medium text-lg">Manage your marketplace activity and campus life</p>
               </div>
           </div>
-
 
           {activeTab === 'marketplace' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><MarketplaceUI /></div>}
           {activeTab === 'cart' && <UserCartTab />}
@@ -156,34 +200,7 @@ export default function UserDasboardd() {
             </div>
           )}
 
-          {activeTab === 'analytics' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><UserAnalyticsTab /></div>}
-          {activeTab === 'reports' && <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><UserReportsTab /></div>}
-          {activeTab === 'events' && <UserEventsTab />}
-          
-          {/* Placeholder Tabs */}
-          {activeTab === 'sell' && (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
-               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center text-primary">
-                  <PlusCircle size={40} />
-               </div>
-                <div>
-                   <h1 className="text-3xl font-black text-primary mb-2">List an Item</h1>
-                   <p className="text-muted-foreground font-medium">The selling feature is coming soon to the campus marketplace!</p>
-                </div>
-            </div>
-          )}
-          
-          {activeTab === 'transactions' && (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
-               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center text-primary">
-                  <History size={40} />
-               </div>
-                <div>
-                   <h1 className="text-3xl font-black text-primary mb-2">My Transactions</h1>
-                   <p className="text-muted-foreground font-medium">Transaction history for your campus deals is coming soon!</p>
-                </div>
-            </div>
-          )}
+          {activeTab === 'transactions' && <UserTransactionsTab />}
           
           {activeTab === 'profile' && (
             <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">

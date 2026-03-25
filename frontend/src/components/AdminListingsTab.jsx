@@ -115,6 +115,7 @@ export function AdminListingsTab() {
                 <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Price</th>
                 <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Seller</th>
                 <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Status</th>
+                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground">Stock</th>
                 <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground text-right">Actions</th>
               </tr>
             </thead>
@@ -149,10 +150,18 @@ export function AdminListingsTab() {
                   <td className="px-6 py-4">
                     <div className={cn(
                       "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                      item.status === 'available' ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                      item.status === 'available' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                     )}>
                       {item.status === 'available' ? <CheckCircle size={12} /> : <XCircle size={12} />}
                       {item.status}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className={cn(
+                      "font-black text-sm",
+                      item.stockQuantity === 0 ? "text-red-500" : item.stockQuantity < 3 ? "text-amber-500" : "text-primary"
+                    )}>
+                      {item.stockQuantity} Qty
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">

@@ -1,8 +1,6 @@
 import React from "react";
 import { cn } from '../lib/utils';
-import { 
-  Tag, Package, Percent, BadgeDollarSign
-} from "lucide-react";
+import { Tag, Package, Percent, BadgeDollarSign} from "lucide-react";
 
 export function AdminPricingTab() {
   return (

@@ -61,12 +61,19 @@ exports.addToCart = async (req, res, next) => {
 
       if (itemIndex > -1) {
         // Product exists, update quantity and sync other details
-        cart.items[itemIndex].quantity = quantity;
+        const newQuantity = quantity;
+        if (newQuantity > product.stockQuantity) {
+          return res.status(400).json({ success: false, message: `Only ${product.stockQuantity} items available in stock` });
+        }
+        cart.items[itemIndex].quantity = newQuantity;
         cart.items[itemIndex].price = product.price; // Sync price in case it changed
         cart.items[itemIndex].name = product.title;
         cart.items[itemIndex].imageUrl = product.imageUrl;
       } else {
         // Product does not exist, push to array
+        if (quantity > product.stockQuantity) {
+          return res.status(400).json({ success: false, message: `Only ${product.stockQuantity} items available in stock` });
+        }
         cart.items.push(itemData);
       }
       await cart.save();

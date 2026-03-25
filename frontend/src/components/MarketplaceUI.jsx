@@ -80,6 +80,7 @@ function InlineItemCard({
   imageUrl,
   seller,
   status = "Available",
+  stockQuantity = 0,
   isFeatured = false,
   onAddToCart,
   onToggleWishlist,
@@ -126,10 +127,10 @@ function InlineItemCard({
           variant="outline" 
           className={cn(
             "absolute top-4 right-4 backdrop-blur-md border-none px-3 py-1 font-bold",
-            status === "Available" ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"
+            stockQuantity > 0 ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"
           )}
         >
-          {status}
+          {stockQuantity > 0 ? "Available" : "Sold Out"}
         </Badge>
 
         {/* Action Buttons (Overlay) */}
@@ -144,8 +145,14 @@ function InlineItemCard({
             </Button>
            <Button 
              size="icon" 
-             className="rounded-full w-10 h-10 shadow-xl bg-white text-primary hover:bg-primary hover:text-white"
-             onClick={() => onAddToCart(id)}
+             className={cn(
+               "rounded-full w-10 h-10 shadow-xl transition-all",
+               stockQuantity > 0 
+                 ? "bg-white text-primary hover:bg-primary hover:text-white" 
+                 : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+             )}
+             onClick={() => stockQuantity > 0 && onAddToCart(id)}
+             disabled={stockQuantity === 0}
            >
              <ShoppingCart size={18} />
            </Button>
@@ -160,12 +167,23 @@ function InlineItemCard({
           </h3>
         </div>
 
-         <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md">
-               <Tag size={12} />
-               <span>{condition}</span>
-            </div>
-         </div>
+        <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
+           <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md">
+              <Tag size={12} />
+              <span>{condition}</span>
+           </div>
+           <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md">
+              <Clock size={12} />
+              <span>2 days ago</span>
+           </div>
+           <div className={cn(
+             "flex items-center gap-1 px-2 py-1 rounded-md font-bold",
+             stockQuantity > 0 ? "bg-primary/10 text-primary" : "bg-red-100 text-red-600"
+           )}>
+              <PackageSearch size={12} />
+              <span>{stockQuantity > 0 ? `${stockQuantity} In Stock` : "Out of Stock"}</span>
+           </div>
+        </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div>
@@ -296,21 +314,14 @@ export default function MarketplaceUI() {
     return matchesCategory && matchesSearch;
   });
 
-  if (loading) {
-    return (
-      <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-        <p className="text-muted-foreground font-bold animate-pulse">Fetching campus deals...</p>
-      </div>
-    );
-  }
+  // Fetching handled implicitly by rendering filteredItems or empty state
 
   if (error) {
     return (
-      <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
+      <div className="h-[60vh] flex flex-col items-center justify-start pt-32 space-y-4">
         <X className="w-12 h-12 text-red-500" />
-        <p className="text-red-500 font-bold">{error}</p>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
+        <p className="text-red-500 font-bold text-lg">{error}</p>
+        <Button onClick={() => fetchData()} className="px-8 py-3 bg-primary text-white rounded-2xl font-black shadow-lg">Retry Sync</Button>
       </div>
     );
   }
@@ -318,9 +329,14 @@ export default function MarketplaceUI() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 p-4 md:p-6 pb-24 md:pb-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-primary tracking-tight mb-2">Campus Marketplace</h1>
-          <p className="text-muted-foreground font-medium">Showing {filteredItems.length} items currently available</p>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl font-black text-primary tracking-tight">Campus Marketplace</h1>
+            <Badge variant="secondary" className="bg-secondary/10 text-secondary border-secondary/20 font-black px-3 py-1">
+              {filteredItems.length} Items Live
+            </Badge>
+          </div>
+          <p className="text-muted-foreground font-medium text-lg">Discover the best deals from your fellow students</p>
         </div>
         
         <div className="flex items-center gap-3 w-full md:w-auto">
