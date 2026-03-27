@@ -1,0 +1,263 @@
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Universal Top Navbar */
+.topNavbar {
+  height: 72px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 0 3rem; /* match spacing */
+  border-bottom: 1px solid #e2e8f0;
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logoIcon {
+  background-color: var(--bg-navy, #0b1e4a);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px; /* iOS squircle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(11, 30, 74, 0.15);
+}
+
+.logoTextWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logoTitle {
+  font-weight: 900;
+  font-size: 1.15rem;
+  color: var(--bg-navy, #0b1e4a);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.logoSubtitle {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--primary-color, #ff5a20);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 0.1rem;
+}
+
+.container {
+  display: flex;
+  flex: 1; /* Takes the remaining height after navbar */
+  width: 100vw;
+  overflow: hidden;
+}
+
+.leftPanel {
+  flex: 0 0 45%;
+  background-color: var(--bg-navy);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Background Image Layering */
+.bgImageWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  /* Send it to the back */
+}
+
+.bgImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Removed grayscale so the natural vibrant colors show through */
+}
+
+.bgOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Lowered the opacity so the image pops much more */
+  background: linear-gradient(to bottom right,
+      rgba(11, 30, 74, 0.70),
+      rgba(11, 30, 74, 0.95));
+}
+
+/* Decorative circle in the bottom right corner of left panel */
+.leftPanel::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -50px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 40px solid rgba(255, 255, 255, 0.05);
+}
+
+.badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  display: inline-block;
+  margin-bottom: 2rem;
+  width: fit-content;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.highlight {
+  color: var(--primary-color);
+}
+
+.description {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 3rem;
+  max-width: 400px;
+}
+
+.cardsContainer {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.featureCard {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  border-radius: 16px;
+  flex: 1;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: rgba(255, 90, 32, 0.1);
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.cardTitle {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Soft, white-ish background with a very subtle dark navy / ice blue gradient */
+  background: linear-gradient(135deg, #f8fafc 0%, #eaf0f6 100%);
+  padding: 2rem;
+  position: relative;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 500px;
+  background-color: #ffffff;
+  padding: 3rem;
+  border-radius: 24px;
+  /* Premium elegant shadow tinted with your #0b1e4a dark navy blue */
+  box-shadow: 0 30px 60px -12px rgba(11, 30, 74, 0.15), 0 0 4px rgba(11, 30, 74, 0.05);
+}
+
+/* Toggling Views */
+.contentWrapper,
+.animationWrapper,
+.errorWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.5s ease;
+  z-index: 1;
+  /* keep content above background */
+}
+
+.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .leftPanel {
+    display: none;
+  }
+}
