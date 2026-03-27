@@ -157,7 +157,7 @@ function MarketplacePage() {
     { label: 'Dashboard', to: '/dashboard', isActive: location.pathname === '/' || location.pathname === '/dashboard' },
     { label: 'Marketplace', to: '/marketplace', isActive: location.pathname === '/marketplace' },
     { label: 'My Cart', to: '/cart', isActive: location.pathname === '/cart' },
-    { label: 'My Listings', to: '/items' },
+    { label: 'My Listings', to: '/items/my-listings', isActive: location.pathname === '/items/my-listings' },
     { label: 'Orders', to: '/orders' },
     { label: 'Messages', to: '/messages' },
   ];

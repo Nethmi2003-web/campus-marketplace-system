@@ -10,6 +10,54 @@ const statusClassMap = {
 const PLACEHOLDER_IMAGE =
   'https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=900&q=80';
 
+function normalizeImageCandidate(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.replace(/\\/g, '/');
+}
+
+function resolveItemImage(item) {
+  if (Array.isArray(item?.images)) {
+    for (const imageEntry of item.images) {
+      const direct = normalizeImageCandidate(imageEntry);
+      if (direct) {
+        return direct;
+      }
+
+      if (imageEntry && typeof imageEntry === 'object') {
+        const resolved =
+          normalizeImageCandidate(imageEntry.url)
+          || normalizeImageCandidate(imageEntry.secure_url)
+          || normalizeImageCandidate(imageEntry.imageUrl)
+          || normalizeImageCandidate(imageEntry.path)
+          || normalizeImageCandidate(imageEntry.src);
+
+        if (resolved) {
+          return resolved;
+        }
+      }
+    }
+  }
+
+  const singleImage =
+    normalizeImageCandidate(item?.imageUrl)
+    || normalizeImageCandidate(item?.image)
+    || normalizeImageCandidate(item?.thumbnail);
+
+  if (singleImage) {
+    return singleImage;
+  }
+
+  return PLACEHOLDER_IMAGE;
+}
+
 function getSellerName(seller) {
   if (!seller) {
     return 'Unknown Seller';
@@ -24,7 +72,7 @@ function getSellerName(seller) {
 }
 
 function ItemCard({ item, onClick }) {
-  const imageUrl = item?.images?.[0] || PLACEHOLDER_IMAGE;
+  const imageUrl = resolveItemImage(item);
   const title = item?.title || 'Untitled Item';
   const category = item?.category || 'Other';
   const statusValue = String(item?.status || 'Available').toLowerCase();

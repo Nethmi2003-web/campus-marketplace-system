@@ -26,6 +26,19 @@ function InlineItemCard({
 }) {
   const [isLiked, setIsLiked] = useState(initialLiked);
 
+  const normalizedStatus = String(status || "Available").toLowerCase();
+  const normalizedQuantity = Number(stockQuantity);
+  const hasKnownQuantity = Number.isFinite(normalizedQuantity);
+  const hasInventory = hasKnownQuantity ? normalizedQuantity > 0 : true;
+  const isAvailable = normalizedStatus === "available" && hasInventory;
+  const statusLabel = normalizedStatus === "sold"
+    ? "Sold"
+    : normalizedStatus === "reserved"
+      ? "Reserved"
+      : isAvailable
+        ? "Available"
+        : "Sold Out";
+
 
   React.useEffect(() => {
     setIsLiked(initialLiked);
@@ -65,10 +78,10 @@ function InlineItemCard({
           variant="outline" 
           className={cn(
             "absolute top-4 right-4 backdrop-blur-md border-none px-3 py-1 font-bold",
-            stockQuantity > 0 ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"
+            isAvailable ? "bg-green-500/90 text-white" : "bg-red-500/90 text-white"
           )}
         >
-          {stockQuantity > 0 ? "Available" : "Sold Out"}
+          {statusLabel}
         </Badge>
 
         {/* Action Buttons (Overlay) */}
@@ -84,12 +97,12 @@ function InlineItemCard({
              size="icon" 
              className={cn(
                "rounded-2xl w-10 h-10 shadow-xl transition-all",
-               stockQuantity > 0 
+               isAvailable 
                  ? "bg-white text-primary hover:bg-primary hover:text-white" 
                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
              )}
-             onClick={() => stockQuantity > 0 && onAddToCart(id)}
-             disabled={stockQuantity === 0}
+             onClick={() => isAvailable && onAddToCart(id)}
+             disabled={!isAvailable}
            >
              <ShoppingCart size={18} />
            </Button>
@@ -115,10 +128,14 @@ function InlineItemCard({
            </div>
            <div className={cn(
              "flex items-center gap-1 px-2 py-1 rounded-md font-bold",
-             stockQuantity > 0 ? "bg-primary/10 text-primary" : "bg-red-100 text-red-600"
+             isAvailable ? "bg-primary/10 text-primary" : "bg-red-100 text-red-600"
            )}>
               <PackageSearch size={12} />
-              <span>{stockQuantity > 0 ? `${stockQuantity} In Stock` : "Out of Stock"}</span>
+              <span>
+                {isAvailable
+                  ? (hasKnownQuantity ? `${normalizedQuantity} In Stock` : "In Stock")
+                  : statusLabel}
+              </span>
            </div>
         </div>
 
@@ -127,7 +144,7 @@ function InlineItemCard({
             <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Price</p>
             <p className="text-2xl font-black text-primary tracking-tight">LKR {price.toLocaleString()}</p>
           </div>
-          <button onClick={() => stockQuantity > 0 && onAddToCart(id)} className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-lg shadow-primary/5">
+           <button onClick={() => isAvailable && onAddToCart(id)} className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-lg shadow-primary/5">
              <ShoppingCart size={20} />
           </button>
         </div>
@@ -148,6 +165,54 @@ const CATEGORIES = [
   { id: "Services & Tutoring", name: "Services & Tutoring" },
   { id: "Other", name: "Other" },
 ];
+
+function resolveItemImage(item) {
+  const normalizeImageCandidate = (value) => {
+    if (typeof value !== "string") {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    return trimmed.replace(/\\/g, "/");
+  };
+
+  if (Array.isArray(item?.images)) {
+    for (const imageEntry of item.images) {
+      const direct = normalizeImageCandidate(imageEntry);
+      if (direct) {
+        return direct;
+      }
+
+      if (imageEntry && typeof imageEntry === "object") {
+        const resolved =
+          normalizeImageCandidate(imageEntry.url)
+          || normalizeImageCandidate(imageEntry.secure_url)
+          || normalizeImageCandidate(imageEntry.imageUrl)
+          || normalizeImageCandidate(imageEntry.path)
+          || normalizeImageCandidate(imageEntry.src);
+
+        if (resolved) {
+          return resolved;
+        }
+      }
+    }
+  }
+
+  const singleImage =
+    normalizeImageCandidate(item?.imageUrl)
+    || normalizeImageCandidate(item?.image)
+    || normalizeImageCandidate(item?.thumbnail);
+
+  if (singleImage) {
+    return singleImage;
+  }
+
+  return "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=500&auto=format&fit=crop";
+}
 
 export default function MarketplaceUI() {
   const navigate = useNavigate();
@@ -334,6 +399,7 @@ export default function MarketplaceUI() {
               key={item._id} 
               id={item._id}
               {...item} 
+              imageUrl={resolveItemImage(item)}
               seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Student"}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}

@@ -5,7 +5,6 @@ import 'react-toastify/dist/ReactToastify.css';
 // Pages
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import MarketplaceUI from './components/MarketplaceUI';
 import MarketplacePage from './pages/MarketplacePage';
 import ItemDetailPage from './pages/ItemDetailPage';
 import AddItemPage from './pages/AddItemPage';
@@ -51,7 +50,7 @@ function App() {
         />
         <Route path="/login" element={<MainLayout><LoginPage /></MainLayout>} />
         <Route path="/register" element={<MainLayout><RegisterPage /></MainLayout>} />
-        <Route path="/items" element={<MainLayout><MarketplaceUI /></MainLayout>} />
+        <Route path="/items" element={<Navigate to="/marketplace" replace />} />
 
         {/* Item Management Component */}
         <Route path="/marketplace" element={<MarketplacePage />} />
