@@ -1,6 +1,54 @@
 import React from 'react';
 import styles from './ItemPoster.module.css';
 
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=1200&q=80';
+
+function resolvePosterImage(item) {
+  const normalizeCandidate = (value) => {
+    if (typeof value !== 'string') {
+      return null;
+    }
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+    return trimmed.replace(/\\/g, '/');
+  };
+
+  if (Array.isArray(item?.images)) {
+    for (const imageEntry of item.images) {
+      const direct = normalizeCandidate(imageEntry);
+      if (direct) {
+        return direct;
+      }
+
+      if (imageEntry && typeof imageEntry === 'object') {
+        const nested =
+          normalizeCandidate(imageEntry.url)
+          || normalizeCandidate(imageEntry.secure_url)
+          || normalizeCandidate(imageEntry.imageUrl)
+          || normalizeCandidate(imageEntry.path)
+          || normalizeCandidate(imageEntry.src);
+
+        if (nested) {
+          return nested;
+        }
+      }
+    }
+  }
+
+  const single =
+    normalizeCandidate(item?.imageUrl)
+    || normalizeCandidate(item?.image)
+    || normalizeCandidate(item?.thumbnail);
+
+  if (single) {
+    return single;
+  }
+
+  return PLACEHOLDER_IMAGE;
+}
+
 function formatDate(value) {
   const date = value ? new Date(value) : new Date();
   return date.toLocaleDateString('en-GB', {
@@ -11,7 +59,7 @@ function formatDate(value) {
 }
 
 function ItemPoster({ item, currentUser }) {
-  const firstImage = item?.images?.[0] || item?.imageUrl || 'https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=1200&q=80';
+  const firstImage = resolvePosterImage(item);
   const sellerName = item?.seller
     ? `${item.seller.firstName || ''} ${item.seller.lastName || ''}`.trim()
     : `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || 'SLIIT Student';
@@ -32,7 +80,17 @@ function ItemPoster({ item, currentUser }) {
       <div className={styles.divider} />
 
       <div className={styles.imageSection}>
-        <img src={firstImage} alt={item?.title || 'Item image'} className={styles.mainImage} />
+        <img
+          src={firstImage}
+          alt={item?.title || 'Item image'}
+          className={styles.mainImage}
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
+          loading="eager"
+          onError={(event) => {
+            event.currentTarget.src = PLACEHOLDER_IMAGE;
+          }}
+        />
       </div>
 
       <div className={styles.divider} />

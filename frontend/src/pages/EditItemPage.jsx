@@ -14,6 +14,9 @@ const categoryOptions = [
   'Other',
 ];
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/webp'];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
 const readCurrentUser = () => {
   const studentRaw = localStorage.getItem('std_userInfo');
   if (studentRaw) {
@@ -89,7 +92,34 @@ function EditItemPage() {
   };
 
   const handleFileChange = (event) => {
-    setNewFiles(Array.from(event.target.files || []));
+    const selectedFiles = Array.from(event.target.files || []);
+    const validFiles = [];
+    let invalidTypeFound = false;
+    let invalidSizeFound = false;
+
+    selectedFiles.forEach((file) => {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        invalidTypeFound = true;
+        return;
+      }
+
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        invalidSizeFound = true;
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (invalidTypeFound) {
+      toast.error('Only JPEG/JPG/WEBP images are allowed.');
+    }
+
+    if (invalidSizeFound) {
+      toast.error('Each image must be 5MB or less.');
+    }
+
+    setNewFiles(validFiles);
   };
 
   const removeExistingImage = (url) => {
@@ -224,11 +254,12 @@ function EditItemPage() {
           id="images"
           name="images"
           type="file"
-          accept="image/*"
+          accept=".jpeg,.jpg,.webp,image/jpeg,image/jpg,image/webp"
           multiple
           onChange={handleFileChange}
           className={styles.input}
         />
+        <p className={styles.helperText}>Allowed: JPEG/JPG/WEBP, maximum 5MB per image.</p>
 
         <div className={styles.previewGrid}>
           {newFilePreviews.map((preview, index) => (

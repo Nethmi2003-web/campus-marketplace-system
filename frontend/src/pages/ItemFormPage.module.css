@@ -30,6 +30,13 @@
   margin-top: 6px;
 }
 
+.helperText {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .input,
 .textarea {
   border: 1px solid #cbd5e1;
