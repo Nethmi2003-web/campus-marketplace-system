@@ -1,10 +1,28 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Image as ImageIcon, PackageOpen, Pencil, Trash2 } from 'lucide-react';
+import {
+  Image as ImageIcon,
+  PackageOpen,
+  Pencil,
+  Trash2,
+  LayoutDashboard,
+  ShoppingBag,
+  ShoppingCart,
+  Package,
+  Heart,
+  ClipboardList,
+  Tag,
+  CreditCard,
+  BarChart2,
+  Calendar,
+  User,
+  LogOut,
+} from 'lucide-react';
 import { getMyListings, updateItem } from '../services/itemService';
 import EditItemModal from '../components/items/EditItemModal';
 import DeleteConfirmModal from '../components/items/DeleteConfirmModal';
 import Toast from '../components/common/Toast';
+import { cn } from '../lib/utils';
 
 const tabs = ['All', 'Available', 'Reserved', 'Sold'];
 
@@ -168,43 +186,179 @@ function MyListingsPage() {
     }
   };
 
-  const sidebarItems = [
-    { label: 'Dashboard', to: '/dashboard', isActive: location.pathname === '/' || location.pathname === '/dashboard' },
-    { label: 'Marketplace', to: '/marketplace', isActive: location.pathname === '/marketplace' },
-    { label: 'My Cart', to: '/cart', isActive: location.pathname === '/cart' },
-    { label: 'My Listings', to: '/items/my-listings', isActive: location.pathname === '/items/my-listings' },
-    { label: 'Orders', to: '/orders', isActive: location.pathname === '/orders' },
-    { label: 'Messages', to: '/messages', isActive: location.pathname === '/messages' },
+  const sidebarSections = [
+    {
+      title: 'MAIN',
+      items: [
+        {
+          id: 'overview',
+          label: 'Dashboard Home',
+          icon: LayoutDashboard,
+          dashboardTab: 'overview',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'overview',
+        },
+      ],
+    },
+    {
+      title: 'BUYING',
+      items: [
+        {
+          id: 'marketplace',
+          label: 'Marketplace',
+          icon: ShoppingBag,
+          to: '/marketplace',
+          isActive: location.pathname === '/marketplace',
+        },
+        {
+          id: 'cart',
+          label: 'My Cart',
+          icon: ShoppingCart,
+          dashboardTab: 'cart',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'cart',
+        },
+        {
+          id: 'purchases',
+          label: 'My Purchases',
+          icon: Package,
+          dashboardTab: 'purchases',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'purchases',
+        },
+        {
+          id: 'wishlist',
+          label: 'Wishlist',
+          icon: Heart,
+          dashboardTab: 'wishlist',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'wishlist',
+        },
+      ],
+    },
+    {
+      title: 'SELLING',
+      items: [
+        {
+          id: 'listings',
+          label: 'My Listings',
+          icon: ClipboardList,
+          to: '/items/my-listings',
+          isActive: location.pathname === '/items/my-listings',
+        },
+        {
+          id: 'add-item',
+          label: 'Add Item',
+          icon: Tag,
+          dashboardTab: 'add_item',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'add_item',
+        },
+        {
+          id: 'sales',
+          label: 'My Sales / Orders',
+          icon: Tag,
+          dashboardTab: 'sales',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'sales',
+        },
+      ],
+    },
+    {
+      title: 'ACTIVITY',
+      items: [
+        {
+          id: 'transactions',
+          label: 'Transactions',
+          icon: CreditCard,
+          dashboardTab: 'transactions',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'transactions',
+        },
+        {
+          id: 'analytics',
+          label: 'My Analytics',
+          icon: BarChart2,
+          dashboardTab: 'analytics',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'analytics',
+        },
+      ],
+    },
+    {
+      title: 'CAMPUS',
+      items: [
+        {
+          id: 'events',
+          label: 'Campus Events',
+          icon: Calendar,
+          dashboardTab: 'events',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'events',
+        },
+      ],
+    },
+    {
+      title: 'ACCOUNT',
+      items: [
+        {
+          id: 'profile',
+          label: 'Profile Settings',
+          icon: User,
+          dashboardTab: 'profile',
+          isActive: location.pathname === '/dashboard' && location.state?.activeTab === 'profile',
+        },
+      ],
+    },
   ];
+
+  const handleSidebarNavigate = (item) => {
+    if (item.to) {
+      navigate(item.to);
+      return;
+    }
+
+    if (item.dashboardTab) {
+      navigate('/dashboard', { state: { activeTab: item.dashboardTab } });
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('std_userInfo');
+    navigate('/');
+  };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: '#f1f5f9', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-      <aside style={{ width: '250px', background: '#0f1b3d', color: '#fff', padding: '28px 18px' }}>
-        <h2 style={{ fontSize: '20px', margin: '0 0 28px', fontWeight: 800 }}>SLIIT Marketplace</h2>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {sidebarItems.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              onClick={() => navigate(item.to)}
-              style={{
-                border: 0,
-                textAlign: 'left',
-                color: item.isActive ? '#ffffff' : '#cbd5e1',
-                background: item.isActive ? '#f97316' : 'transparent',
-                padding: '12px 14px',
-                borderRadius: '999px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              {item.label}
-            </button>
+      <aside className="w-64 fixed left-0 top-20 bottom-0 bg-gradient-to-b from-[#001f5c] to-[#002a7a] p-4 flex-col hidden lg:flex rounded-tr-3xl overflow-y-auto pb-6 gap-6">
+        <div className="flex-1 mt-2 space-y-6">
+          {sidebarSections.map((section) => (
+            <div key={section.title} className="flex flex-col gap-1">
+              <h3 className="px-4 text-[11px] font-black tracking-widest text-white/40 mb-1">{section.title}</h3>
+              {section.items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleSidebarNavigate(item)}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all font-bold text-[13px] group text-left',
+                    item.isActive
+                      ? 'bg-gradient-to-r from-secondary to-secondary/80 text-white shadow-lg shadow-secondary/20'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  )}
+                >
+                  <item.icon
+                    size={18}
+                    className={cn(item.isActive ? 'text-white' : 'text-white/50 group-hover:text-white transition-colors')}
+                  />
+                  {item.label}
+                </button>
+              ))}
+            </div>
           ))}
-        </nav>
+        </div>
+        <div className="mt-auto pt-4 border-t border-white/10 shrink-0">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/50 hover:bg-red-500/20 hover:text-red-400 transition-all font-bold text-[13px]"
+          >
+            <LogOut size={18} /> Logout Session
+          </button>
+        </div>
       </aside>
 
-      <main style={{ flex: 1, padding: '22px' }}>
+      <main style={{ flex: 1, padding: '22px' }} className="lg:ml-64">
         <div style={{ fontSize: '14px', marginBottom: '16px' }}>
           <Link
             to="/marketplace"

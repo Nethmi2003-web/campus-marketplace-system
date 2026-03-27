@@ -83,8 +83,15 @@ function UserNavbar({ user, setActiveTab }) {
 // -------------------------------------------------------------
 export default function UserDasboardd() {
   const navigate = useNavigate();
+  const location = useLocation();
   const userInfo = JSON.parse(localStorage.getItem("std_userInfo") || "{}");
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || "overview");
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
   
   // Aggressive Session Validation
   React.useEffect(() => {
