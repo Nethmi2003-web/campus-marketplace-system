@@ -4,7 +4,7 @@ import { cn } from '../lib/utils';
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Building2, Search, Bell, ShoppingCart, User, LayoutDashboard,
-  ShoppingBag, PlusCircle, ShieldCheck, LogOut,
+  ShoppingBag, PlusCircle, ShieldCheck, LogOut, Package, Tag, CreditCard, ClipboardList,
   Heart, FileText
 } from "lucide-react";
 
@@ -18,6 +18,7 @@ import MarketplaceUI from "../components/MarketplaceUI";
 import { UserSidebar } from "../components/shared/UserSidebar";
 import { UserEventsTab } from "../components/UserEventsTab";
 import { UserAnalyticsTab } from "../components/UserAnalyticsTab";
+import { UserProfileTab } from "../components/shared/UserProfileTab";
 
 
 function UserNavbar({ user, setActiveTab }) {
@@ -62,8 +63,12 @@ function UserNavbar({ user, setActiveTab }) {
             <p className="text-sm font-black text-primary tracking-tight leading-none mb-1">{user?.firstName || 'Student'}</p>
             <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{user?.faculty || 'Faculty'}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-110 transition-transform">
-             <User className="text-white" size={20} />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-110 transition-transform overflow-hidden">
+             {user?.profileImage ? (
+               <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+             ) : (
+               <User className="text-white" size={20} />
+             )}
           </div>
         </div>
       </div>
@@ -173,29 +178,67 @@ export default function UserDasboardd() {
           {activeTab === 'analytics' && <UserAnalyticsTab />}
           {activeTab === 'events' && <UserEventsTab />}
           
-          {activeTab === 'reports' && (
+          {activeTab === 'purchases' && (
             <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
-               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center text-primary">
-                  <FileText size={40} />
+               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                  <Package size={40} />
                </div>
                <div>
-                  <h3 className="text-xl font-bold text-primary">Marketplace Reports</h3>
-                  <p className="text-muted-foreground">Detailed reports of your activity will appear here.</p>
+                  <h3 className="text-xl font-bold text-primary">My Purchases</h3>
+                  <p className="text-muted-foreground">Items you have bought will appear here.</p>
+               </div>
+            </div>
+          )}
+
+          {activeTab === 'listings' && (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
+               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                  <ClipboardList size={40} />
+               </div>
+               <div>
+                  <h3 className="text-xl font-bold text-primary">My Listings</h3>
+                  <p className="text-muted-foreground">Manage your currently active product listings.</p>
+               </div>
+            </div>
+          )}
+
+          {activeTab === 'add_item' && (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
+               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                  <PlusCircle size={40} />
+               </div>
+               <div>
+                  <h3 className="text-xl font-bold text-primary">Add New Item</h3>
+                  <p className="text-muted-foreground">Create a new listing to sell on the marketplace.</p>
+               </div>
+            </div>
+          )}
+
+          {activeTab === 'sales' && (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
+               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                  <Tag size={40} />
+               </div>
+               <div>
+                  <h3 className="text-xl font-bold text-primary">My Sales & Orders</h3>
+                  <p className="text-muted-foreground">Track items you have sold and current orders.</p>
+               </div>
+            </div>
+          )}
+
+          {activeTab === 'transactions' && (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
+               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                  <CreditCard size={40} />
+               </div>
+               <div>
+                  <h3 className="text-xl font-bold text-primary">Transactions</h3>
+                  <p className="text-muted-foreground">Detailed history of your financial transactions.</p>
                </div>
             </div>
           )}
           
-          {activeTab === 'profile' && (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-muted/20 rounded-[3rem] border-2 border-dashed border-muted">
-               <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center text-primary">
-                  <User size={40} />
-               </div>
-               <div>
-                  <h3 className="text-xl font-bold text-primary">Profile Settings</h3>
-                  <p className="text-muted-foreground">Manage your university faculty and contact details here.</p>
-               </div>
-            </div>
-          )}
+          {activeTab === 'profile' && <UserProfileTab />}
 
           {activeTab === 'wishlist' && <UserWishlistTab />}
 

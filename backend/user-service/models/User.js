@@ -38,9 +38,17 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
     },
+    bio: {
+      type: String,
+      default: "",
+    },
     sessionVersion: {
       type: Number,
       default: 0,
+    },
+    profileImage: {
+      type: String,
+      default: "",
     },
   },
   { timestamps: true }

@@ -3,8 +3,12 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
-// Load env vars
+// Load env vars first
 dotenv.config();
+
+// Debug logs
+console.log('PORT =', process.env.PORT);
+console.log('MONGODB_URI =', process.env.MONGODB_URI);
 
 // Connect to MongoDB
 connectDB();
@@ -44,9 +48,9 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode).json({ 
+  res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal Server Error' 
+    message: err.message || 'Internal Server Error'
   });
 });
 

@@ -46,6 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
     lastName: user.lastName,
     universityEmail: user.universityEmail,
     role: user.role,
+    profileImage: user.profileImage,
     token: generateToken(user._id),
   });
 });
@@ -66,6 +67,7 @@ const loginUser = asyncHandler(async (req, res) => {
       lastName: user.lastName,
       universityEmail: user.universityEmail,
       role: user.role,
+      profileImage: user.profileImage,
       token: generateToken(user._id),
     });
   } else {
@@ -80,6 +82,8 @@ const loginUser = asyncHandler(async (req, res) => {
 const getUserProfile = asyncHandler(async (req, res) => {
   res.json(req.user);
 });
+
+const { cloudinary } = require('../../config/cloudinaryUpload');
 
 // @desc  Update user profile
 // @route PUT /api/users/me
@@ -102,13 +106,50 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
   }
 
+  // Handle Cloudinary upload if an image exists
+  if (req.file) {
+    try {
+      // Delete existing old profile image from Cloudinary to save space
+      if (user.profileImage) {
+        try {
+          const publicId = user.profileImage.split('/').pop().split('.')[0];
+          await cloudinary.uploader.destroy(publicId);
+        } catch (err) {
+          console.error("Failed to delete old profile image:", err);
+        }
+      }
+
+      const uploadFileToCloudinary = (fileBuffer, mimetype) =>
+        new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: "image", format: "webp" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          require('stream').Readable.from(fileBuffer).pipe(uploadStream);
+        });
+
+      const result = await uploadFileToCloudinary(req.file.buffer, req.file.mimetype);
+      user.profileImage = result.secure_url;
+    } catch (uploadError) {
+      console.error("Cloudinary Exception:", uploadError);
+      res.status(500);
+      throw new Error("Failed to upload image to Cloudinary. Check your internet or API keys.");
+    }
+  }
+
   const updated = await user.save();
   res.json({ 
     _id: updated._id, 
     firstName: updated.firstName, 
     lastName: updated.lastName, 
     universityEmail: updated.universityEmail, 
-    role: updated.role 
+    role: updated.role,
+    phone: updated.phone,
+    bio: updated.bio,
+    profileImage: updated.profileImage
   });
 });
 
