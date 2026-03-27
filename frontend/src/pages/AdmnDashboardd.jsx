@@ -31,8 +31,10 @@ function AdminNavbar({ user, onMenuClick, notifications, notificationOpen, onTog
         >
           <Menu className="w-5 h-5" />
         </button>
-        <ShieldCheck className="text-secondary w-8 h-8" />
-        <h2 className="hidden md:block font-black text-xl text-primary tracking-tight">Admin<span className="text-secondary">Hub</span></h2>
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ff6b35] to-[#f7931e] flex items-center justify-center">
+          <ShoppingBag className="w-5 h-5 text-white" />
+        </div>
+        <h2 className="hidden md:block font-black text-xl text-primary tracking-tight">Admin<span className="text-secondary">Dashboard</span></h2>
       </div>
       <div className="flex items-center gap-6">
         <div className="relative">
@@ -68,7 +70,7 @@ function AdminNavbar({ user, onMenuClick, notifications, notificationOpen, onTog
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-foreground">{user?.firstName || 'System Admin'}</p>
-            <p className="text-[10px] text-secondary font-black uppercase tracking-widest">Master Control</p>
+            <p className="text-[10px] text-secondary font-black uppercase tracking-widest">{user?.role === 'admin' ? 'System Administrator' : user?.role || 'Administrator'}</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shadow-lg">
              <span className="text-white font-bold">{user?.firstName?.charAt(0) || 'A'}</span>
