@@ -67,9 +67,38 @@ function ItemPosterPage() {
 
     try {
       setDownloading(true);
+
+      // Ensure all poster images are fully loaded before canvas capture.
+      const images = Array.from(posterRef.current.querySelectorAll('img'));
+      await Promise.all(
+        images.map(async (img) => {
+          if (img.complete && img.naturalWidth > 0) {
+            return;
+          }
+
+          try {
+            if (typeof img.decode === 'function') {
+              await img.decode();
+              return;
+            }
+          } catch (_decodeError) {
+            // Fallback to load/error listeners below.
+          }
+
+          await new Promise((resolve) => {
+            const done = () => resolve();
+            img.addEventListener('load', done, { once: true });
+            img.addEventListener('error', done, { once: true });
+          });
+        })
+      );
+
       const canvas = await html2canvas(posterRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        imageTimeout: 15000,
       });
       const link = document.createElement('a');
       const safeName = (item.title || 'item-poster').replace(/[^a-zA-Z0-9-_ ]/g, '').trim() || 'item-poster';

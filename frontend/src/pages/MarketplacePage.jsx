@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Bell, Heart, Search, ShoppingCart, SlidersHorizontal } from 'lucide-react';
 import ItemCard from '../components/items/ItemCard';
 import { getAllItems } from '../services/itemService';
@@ -46,9 +46,43 @@ const getRemainingSearchText = (fullSearch, matchedCategory) => {
   return remaining;
 };
 
+const buildSearchableText = (item) => {
+  const sellerName = item?.seller?.name
+    || `${item?.seller?.firstName || ''} ${item?.seller?.lastName || ''}`.trim();
+
+  return [
+    item?.title,
+    item?.description,
+    item?.category,
+    item?.condition,
+    sellerName,
+  ]
+    .map((value) => String(value || '').toLowerCase())
+    .join(' ');
+};
+
+const matchesSearchWords = (item, query) => {
+  const terms = String(query || '')
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (terms.length === 0) {
+    return true;
+  }
+
+  const searchableText = buildSearchableText(item);
+  return terms.every((term) => searchableText.includes(term));
+};
+
+const normalizeCategoryValue = (value) => String(value || '').trim().toLowerCase();
+
 function MarketplacePage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterMenuRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('ALL ITEMS');
   const [autoDetectedCategory, setAutoDetectedCategory] = useState(null);
@@ -56,6 +90,17 @@ function MarketplacePage() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+
+  const updateCategoryQuery = useCallback((categoryValue) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (categoryValue === 'ALL ITEMS') {
+      nextParams.delete('category');
+    } else {
+      nextParams.set('category', categoryValue);
+    }
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const loadItems = useCallback(async () => {
     try {
@@ -76,30 +121,54 @@ function MarketplacePage() {
   }, [loadItems]);
 
   useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    const isValidCategory = CATEGORY_PILLS.some((pill) => pill.value === categoryFromUrl);
+    const nextCategory = isValidCategory ? categoryFromUrl : 'ALL ITEMS';
+
+    if (nextCategory !== activeCategory) {
+      setActiveCategory(nextCategory);
+      setAutoDetectedCategory(null);
+    }
+  }, [searchParams, activeCategory]);
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event) => {
+      if (!filterMenuRef.current) {
+        return;
+      }
+      if (!filterMenuRef.current.contains(event.target)) {
+        setFilterMenuOpen(false);
+      }
+    };
+
+    if (filterMenuOpen) {
+      document.addEventListener('mousedown', closeOnOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick);
+    };
+  }, [filterMenuOpen]);
+
+  useEffect(() => {
     let result = items;
     const normalizedSearch = searchTerm.toLowerCase().trim();
 
     if (activeCategory !== 'ALL ITEMS') {
-      result = result.filter((item) => item.category === activeCategory);
+      result = result.filter(
+        (item) => normalizeCategoryValue(item.category) === normalizeCategoryValue(activeCategory)
+      );
     }
 
     if (normalizedSearch && autoDetectedCategory) {
       const remaining = getRemainingSearchText(searchTerm, autoDetectedCategory);
       if (remaining) {
-        result = result.filter((item) => {
-          const title = (item.title || '').toLowerCase();
-          const description = (item.description || '').toLowerCase();
-          return title.includes(remaining) || description.includes(remaining);
-        });
+        result = result.filter((item) => matchesSearchWords(item, remaining));
       }
     }
 
     if (normalizedSearch && !autoDetectedCategory) {
-      result = result.filter((item) => {
-        const title = (item.title || '').toLowerCase();
-        const description = (item.description || '').toLowerCase();
-        return title.includes(normalizedSearch) || description.includes(normalizedSearch);
-      });
+      result = result.filter((item) => matchesSearchWords(item, normalizedSearch));
     }
 
     setFilteredItems(result);
@@ -138,14 +207,25 @@ function MarketplacePage() {
   const handleShowAllMatchingSearch = () => {
     setActiveCategory('ALL ITEMS');
     setAutoDetectedCategory(null);
+    updateCategoryQuery('ALL ITEMS');
   };
 
   const handleCategoryClick = (categoryValue) => {
     setActiveCategory(categoryValue);
+    updateCategoryQuery(categoryValue);
     if (categoryValue === 'ALL ITEMS') {
       setAutoDetectedCategory(null);
     } else if (autoDetectedCategory && autoDetectedCategory !== categoryValue) {
       setAutoDetectedCategory(null);
+    }
+  };
+
+  const handleFilterSelect = (categoryValue) => {
+    handleCategoryClick(categoryValue);
+    setFilterMenuOpen(false);
+    const grid = document.getElementById('marketplace-results-grid');
+    if (grid) {
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -299,9 +379,68 @@ function MarketplacePage() {
             <button type="button" className={styles.sellBtn} onClick={() => navigate('/items/my-listings')}>
               + Sell My Item
             </button>
-            <button type="button" className={styles.filterBtn}>
-              <SlidersHorizontal size={16} /> FILTERS
-            </button>
+            <div style={{ position: 'relative' }} ref={filterMenuRef}>
+              <button
+                type="button"
+                className={styles.filterBtn}
+                onClick={() => setFilterMenuOpen((prev) => !prev)}
+                aria-expanded={filterMenuOpen}
+                aria-haspopup="menu"
+              >
+                <SlidersHorizontal size={16} /> FILTERS
+              </button>
+              {filterMenuOpen && (
+                <div
+                  role="menu"
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    marginTop: '8px',
+                    width: '224px',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    boxShadow: '0 20px 40px -20px rgba(15, 27, 61, 0.45)',
+                    zIndex: 50,
+                    overflow: 'hidden',
+                  }}
+                >
+                  {CATEGORY_PILLS.map((category) => (
+                    <button
+                      key={`filter-${category.value}`}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => handleFilterSelect(category.value)}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '12px 16px',
+                        border: 0,
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        background: activeCategory === category.value ? '#0f2f74' : '#ffffff',
+                        color: activeCategory === category.value ? '#ffffff' : '#0f1b3d',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (activeCategory !== category.value) {
+                          e.currentTarget.style.background = '#f8fafc';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeCategory !== category.value) {
+                          e.currentTarget.style.background = '#ffffff';
+                        }
+                      }}
+                    >
+                      {category.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
@@ -333,7 +472,7 @@ function MarketplacePage() {
         )}
 
         {!loading && !errorMessage && filteredItems.length > 0 && (
-          <section className={styles.grid}>
+          <section id="marketplace-results-grid" className={styles.grid}>
             {filteredItems.map((item) => (
               <ItemCard key={item._id} item={item} onClick={handleCardClick} />
             ))}

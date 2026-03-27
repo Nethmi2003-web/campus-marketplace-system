@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, Tag, Loader2, Clock } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -18,17 +18,22 @@ function InlineItemCard({
   imageUrl,
   seller,
   status = "Available",
-  stockQuantity = 0,
+  stockQuantity,
   isFeatured = false,
   onAddToCart,
   onToggleWishlist,
+  onViewItem,
   isLiked: initialLiked = false
 }) {
   const [isLiked, setIsLiked] = useState(initialLiked);
 
   const normalizedStatus = String(status || "Available").toLowerCase();
-  const normalizedQuantity = Number(stockQuantity);
-  const hasKnownQuantity = Number.isFinite(normalizedQuantity);
+  const hasKnownQuantity =
+    stockQuantity !== null
+    && stockQuantity !== undefined
+    && stockQuantity !== ''
+    && Number.isFinite(Number(stockQuantity));
+  const normalizedQuantity = hasKnownQuantity ? Number(stockQuantity) : null;
   const hasInventory = hasKnownQuantity ? normalizedQuantity > 0 : true;
   const isAvailable = normalizedStatus === "available" && hasInventory;
   const statusLabel = normalizedStatus === "sold"
@@ -49,8 +54,25 @@ function InlineItemCard({
     onToggleWishlist(id, !isLiked);
   };
 
+  const handleCardClick = () => {
+    if (typeof onViewItem === "function") {
+      onViewItem(id);
+    }
+  };
+
   return (
-    <div className="group overflow-hidden border-2 border-white backdrop-blur-xl hover:border-primary/20 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all duration-700 bg-card/40 rounded-[2.5rem] flex flex-col text-card-foreground shadow-xl shadow-black/5">
+    <div
+      className="group overflow-hidden border-2 border-white backdrop-blur-xl hover:border-primary/20 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all duration-700 bg-card/40 rounded-[2.5rem] flex flex-col text-card-foreground shadow-xl shadow-black/5 cursor-pointer"
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleCardClick();
+        }
+      }}
+    >
       {/* Image Section */}
       <div className="relative h-56 overflow-hidden rounded-t-[2.5rem]">
         <img
@@ -101,7 +123,12 @@ function InlineItemCard({
                  ? "bg-white text-primary hover:bg-primary hover:text-white" 
                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
              )}
-             onClick={() => isAvailable && onAddToCart(id)}
+             onClick={(e) => {
+               e.stopPropagation();
+               if (isAvailable) {
+                 onAddToCart(id);
+               }
+             }}
              disabled={!isAvailable}
            >
              <ShoppingCart size={18} />
@@ -144,7 +171,15 @@ function InlineItemCard({
             <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">Price</p>
             <p className="text-2xl font-black text-primary tracking-tight">LKR {price.toLocaleString()}</p>
           </div>
-           <button onClick={() => isAvailable && onAddToCart(id)} className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-lg shadow-primary/5">
+           <button
+             onClick={(e) => {
+               e.stopPropagation();
+               if (isAvailable) {
+                 onAddToCart(id);
+               }
+             }}
+             className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all hover:scale-110 active:scale-90 shadow-lg shadow-primary/5"
+           >
              <ShoppingCart size={20} />
           </button>
         </div>
@@ -214,14 +249,46 @@ function resolveItemImage(item) {
   return "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=500&auto=format&fit=crop";
 }
 
+function buildSearchableText(item) {
+  const sellerName = item?.seller?.name
+    || `${item?.seller?.firstName || ''} ${item?.seller?.lastName || ''}`.trim();
+
+  return [
+    item?.title,
+    item?.description,
+    item?.category,
+    item?.condition,
+    sellerName,
+  ]
+    .map((value) => String(value || "").toLowerCase())
+    .join(" ");
+}
+
+function matchesSearchWords(item, query) {
+  const terms = String(query || "")
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (terms.length === 0) {
+    return true;
+  }
+
+  const searchableText = buildSearchableText(item);
+  return terms.every((term) => searchableText.includes(term));
+}
+
 export default function MarketplaceUI() {
   const navigate = useNavigate();
+  const filterMenuRef = useRef(null);
   const [items, setItems] = useState([]);
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -264,6 +331,26 @@ export default function MarketplaceUI() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event) => {
+      if (!filterMenuRef.current) {
+        return;
+      }
+
+      if (!filterMenuRef.current.contains(event.target)) {
+        setFilterMenuOpen(false);
+      }
+    };
+
+    if (filterMenuOpen) {
+      document.addEventListener("mousedown", closeOnOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+    };
+  }, [filterMenuOpen]);
 
   const handleToggleWishlist = async (productId, isLiked) => {
     try {
@@ -318,9 +405,18 @@ export default function MarketplaceUI() {
 
   const filteredItems = items.filter(item => {
     const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = matchesSearchWords(item, searchQuery);
     return matchesCategory && matchesSearch;
   });
+
+  const handleFilterSelect = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setFilterMenuOpen(false);
+    const grid = document.getElementById("dashboard-marketplace-results");
+    if (grid) {
+      grid.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   // Fetching handled implicitly by rendering filteredItems or empty state
 
@@ -368,10 +464,35 @@ export default function MarketplaceUI() {
            >
              + Sell My Item
            </Button>
-           <Button variant="outline" className="h-14 rounded-2xl gap-2 border-white bg-white/50 backdrop-blur-md hover:border-primary/30 shadow-xl shadow-black/5 px-6">
-              <SlidersHorizontal size={20} className="text-primary" />
-              <span className="hidden sm:inline font-black text-xs uppercase tracking-widest text-primary">Filters</span>
-           </Button>
+           <div className="relative" ref={filterMenuRef}>
+             <Button
+               variant="outline"
+               className="h-14 rounded-2xl gap-2 border-white bg-white/50 backdrop-blur-md hover:border-primary/30 shadow-xl shadow-black/5 px-6"
+               onClick={() => setFilterMenuOpen((prev) => !prev)}
+             >
+                <SlidersHorizontal size={20} className="text-primary" />
+                <span className="hidden sm:inline font-black text-xs uppercase tracking-widest text-primary">Filters</span>
+             </Button>
+             {filterMenuOpen && (
+               <div className="absolute right-0 mt-2 w-56 rounded-2xl border bg-white shadow-2xl z-30 overflow-hidden">
+                 {CATEGORIES.map((cat) => (
+                   <button
+                     key={`filter-${cat.id}`}
+                     type="button"
+                     onClick={() => handleFilterSelect(cat.id)}
+                     className={cn(
+                       "w-full text-left px-4 py-3 text-xs font-black uppercase tracking-wider transition-colors",
+                       selectedCategory === cat.id
+                         ? "bg-primary text-white"
+                         : "text-primary hover:bg-muted"
+                     )}
+                   >
+                     {cat.name}
+                   </button>
+                 ))}
+               </div>
+             )}
+           </div>
         </div>
       </div>
 
@@ -393,7 +514,7 @@ export default function MarketplaceUI() {
       </div>
 
       {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div id="dashboard-marketplace-results" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredItems.map(item => (
             <InlineItemCard 
               key={item._id} 
@@ -403,6 +524,7 @@ export default function MarketplaceUI() {
               seller={item.seller?.firstName ? `${item.seller.firstName} ${item.seller.lastName}` : "Student"}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
+              onViewItem={(itemId) => navigate(`/items/${itemId}`)}
               isLiked={wishlistIds.has(item._id)}
             />
           ))}

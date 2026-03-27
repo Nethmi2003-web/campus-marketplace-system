@@ -13,6 +13,8 @@ const CATEGORY_OPTIONS = [
 
 const CONDITION_OPTIONS = ['Brand New', 'Like New', 'Good', 'Fair', 'Poor'];
 const STATUS_OPTIONS = ['Available', 'Reserved', 'Sold'];
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/webp'];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const normalizeStatus = (status = '') => {
   const lowered = String(status || '').toLowerCase();
@@ -109,18 +111,16 @@ function EditItemModal({ item, isOpen, onClose, onUpdated }) {
   const canAddMore = totalAfterChanges < 4;
 
   const validateAndCollectImages = (files) => {
-    const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024;
     const availableSlots = 4 - (remainingExisting.length + newImages.length);
     const incoming = Array.from(files || []).slice(0, Math.max(0, availableSlots));
 
     const validFiles = [];
     for (const file of incoming) {
-      if (!acceptedTypes.includes(file.type)) {
-        setUploadError('Only JPG, PNG, and WEBP images are allowed.');
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        setUploadError('Only JPEG/JPG/WEBP images are allowed.');
         continue;
       }
-      if (file.size > maxSize) {
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
         setUploadError('Each image must be 5MB or less.');
         continue;
       }
@@ -616,11 +616,11 @@ function EditItemModal({ item, isOpen, onClose, onUpdated }) {
               >
                 <p style={{ fontSize: '24px', color: '#9ca3af', margin: 0 }}>📷</p>
                 <p style={{ fontSize: '13px', color: '#9ca3af', margin: '6px 0 0' }}>Drop photos here or click to upload</p>
-                <p style={{ fontSize: '11px', color: '#d1d5db', margin: '4px 0 0' }}>JPG, PNG, WEBP • Max 5MB each</p>
+                <p style={{ fontSize: '11px', color: '#d1d5db', margin: '4px 0 0' }}>JPEG, JPG, WEBP • Max 5MB each</p>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept=".jpeg,.jpg,.webp,image/jpeg,image/jpg,image/webp"
                   multiple
                   style={{ display: 'none' }}
                   onChange={(e) => validateAndCollectImages(e.target.files)}
