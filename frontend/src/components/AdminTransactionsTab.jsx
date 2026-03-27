@@ -11,6 +11,9 @@ export function AdminTransactionsTab() {
   const [granularity, setGranularity] = useState("full"); // "full" | "w1" | "w2" | "w3" | "w4"
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
 
   const MONTHS = [
     "January", "February", "March", "April", "May", "June",
@@ -42,6 +45,25 @@ export function AdminTransactionsTab() {
   const totalRevenue = completedOrdersList.reduce((sum, order) => sum + order.totalAmount, 0);
   const completedOrdersCount = completedOrdersList.length;
   const pendingOrders = orders.filter(o => o.paymentStatus === 'pending').length;
+
+  const visibleOrders = orders
+    .filter((order) => {
+      const itemTitle = String(order.items?.[0]?.product?.title || '').toLowerCase();
+      const userName = `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.toLowerCase();
+      const query = searchQuery.toLowerCase().trim();
+      const matchesQuery = !query || itemTitle.includes(query) || userName.includes(query) || String(order._id || '').toLowerCase().includes(query);
+      const matchesStatus = statusFilter === 'all' || order.paymentStatus === statusFilter;
+      return matchesQuery && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'amountHighToLow') {
+        return Number(b.totalAmount || 0) - Number(a.totalAmount || 0);
+      }
+      if (sortBy === 'amountLowToHigh') {
+        return Number(a.totalAmount || 0) - Number(b.totalAmount || 0);
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   // --- Daily Analytics Logic --- //
   const getDailyRevenue = (daysAgo) => {
@@ -111,6 +133,35 @@ export function AdminTransactionsTab() {
           <p className="text-muted-foreground font-medium">Real-time overview of platform-wide revenue and sales</p>
         </div>
          <div className="flex items-center gap-3">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="w-full pl-9 pr-3 h-10 rounded-xl border bg-card text-sm"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="h-10 rounded-xl border bg-card px-3 text-sm"
+            >
+              <option value="all">All Statuses</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="h-10 rounded-xl border bg-card px-3 text-sm"
+            >
+              <option value="newest">Newest</option>
+              <option value="amountHighToLow">Amount: High to Low</option>
+              <option value="amountLowToHigh">Amount: Low to High</option>
+            </select>
             <button className="px-5 py-2.5 rounded-2xl bg-primary text-white text-xs font-black shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
               <ArrowUpRight size={14} /> Export Report
             </button>
@@ -234,7 +285,7 @@ export function AdminTransactionsTab() {
             <span className="text-[10px] font-black text-white bg-primary px-3 py-1 rounded-full uppercase tracking-tighter shadow-lg shadow-primary/20">Active Records</span>
           </div>
           <div className="divide-y overflow-y-auto max-h-[340px] flex-1">
-            {orders.slice(0, 15).map((tx) => (
+            {visibleOrders.slice(0, 15).map((tx) => (
               <div key={tx._id} className="px-8 py-4 flex items-center justify-between gap-6 hover:bg-muted/30 transition-colors group">
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-primary truncate group-hover:translate-x-1 transition-transform">{tx.items[0]?.product?.title || "Course Material"}</p>
@@ -255,10 +306,10 @@ export function AdminTransactionsTab() {
                 </div>
               </div>
             ))}
-            {orders.length === 0 && (
+            {visibleOrders.length === 0 && (
               <div className="px-8 py-20 text-center space-y-3">
                  <Receipt className="mx-auto text-muted-foreground/20" size={48} />
-                 <p className="text-muted-foreground font-bold">No transactions recorded yet.</p>
+                 <p className="text-muted-foreground font-bold">No transactions found for current filters.</p>
               </div>
             )}
           </div>

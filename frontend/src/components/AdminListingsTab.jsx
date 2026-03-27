@@ -7,6 +7,31 @@ import {
   AlertCircle, Loader2, ArrowUpRight, Tag
 } from "lucide-react";
 
+const PLACEHOLDER_IMAGE =
+  'https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=900&q=80';
+
+const getItemImage = (item) => {
+  if (Array.isArray(item?.images)) {
+    for (const imageEntry of item.images) {
+      if (typeof imageEntry === 'string' && imageEntry.trim()) {
+        return imageEntry;
+      }
+      if (imageEntry && typeof imageEntry === 'object') {
+        const candidate = imageEntry.url || imageEntry.secure_url || imageEntry.imageUrl || imageEntry.path || imageEntry.src;
+        if (typeof candidate === 'string' && candidate.trim()) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  if (typeof item?.imageUrl === 'string' && item.imageUrl.trim()) {
+    return item.imageUrl;
+  }
+
+  return PLACEHOLDER_IMAGE;
+};
+
 export function AdminListingsTab() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -128,7 +153,7 @@ export function AdminListingsTab() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border">
-                        <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
+                        <img src={getItemImage(item)} alt={item.title || 'Listing image'} className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <p className="font-bold text-sm text-primary line-clamp-1">{item.title}</p>

@@ -14,7 +14,7 @@ import MyListingsPage from './pages/MyListingsPage';
 
 // Isolated Dashboards
 import UserDasboardd from './pages/UserDasboardd';
-import AdmnDashboardd from './pages/AdmnDashboardd';
+import AdminDashboard from './pages/AdmnDashboardd';
 
 // Components
 import MainLayout from './components/MainLayout';
@@ -105,7 +105,7 @@ function App() {
 
         {/* Fully Isolated Role-Based Dashboards */}
         <Route path="/user-dashboard" element={<UserDasboardd />} />
-        <Route path="/admin-dashboard" element={<AdmnDashboardd />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} />
     </BrowserRouter>
