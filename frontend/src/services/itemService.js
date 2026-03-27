@@ -65,6 +65,21 @@ export const getItemById = async (id) => {
   return response.data;
 };
 
+export const getSimilarItems = async (category, excludeId) => {
+  const response = await itemApi.get('/items', {
+    ...withAuth(),
+    params: {
+      category,
+      status: 'Available',
+      limit: 4,
+      excludeId,
+    },
+  });
+
+  const data = Array.isArray(response.data) ? response.data : [];
+  return data.filter((item) => item._id !== excludeId);
+};
+
 export const createItem = async (formData) => {
   const response = await itemApi.post('/items', formData, withAuth());
   return response.data;

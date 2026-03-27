@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-  getAllItems,
+  getItemsByCategory,
   getItemById,
   createItem,
   getMyListings,
@@ -12,7 +12,7 @@ const { upload } = require('../../config/cloudinaryUpload');
 
 const router = express.Router();
 
-router.route('/').get(getAllItems).post(protect, upload.array('images', 4), createItem);
+router.route('/').get(getItemsByCategory).post(protect, upload.array('images', 4), createItem);
 router.get('/my', protect, getMyListings);
 
 router

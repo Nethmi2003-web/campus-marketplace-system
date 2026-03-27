@@ -27,12 +27,38 @@ function ItemCard({ item, onClick }) {
   const imageUrl = item?.images?.[0] || PLACEHOLDER_IMAGE;
   const title = item?.title || 'Untitled Item';
   const category = item?.category || 'Other';
-  const status = item?.status || 'Available';
+  const statusValue = String(item?.status || 'Available').toLowerCase();
+  const status = statusValue === 'sold' ? 'Sold' : statusValue === 'reserved' ? 'Reserved' : 'Available';
+  const isAvailable = status === 'Available';
+
+  const handleClick = () => {
+    if (!isAvailable) {
+      return;
+    }
+    onClick(item._id);
+  };
 
   return (
-    <article className={styles.card} onClick={() => onClick(item._id)}>
+    <article
+      className={`${styles.card} ${!isAvailable ? styles.cardDisabled : ''}`}
+      onClick={handleClick}
+      role="button"
+      tabIndex={isAvailable ? 0 : -1}
+      onKeyDown={(event) => {
+        if (isAvailable && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
+      aria-disabled={!isAvailable}
+    >
       <div className={styles.imageWrapper}>
         <img src={imageUrl} alt={title} className={styles.image} />
+        {!isAvailable && (
+          <div className={`${styles.diagonalOverlay} ${status === 'Sold' ? styles.overlaySold : styles.overlayReserved}`}>
+            {status === 'Sold' ? 'SOLD' : 'RESERVED'}
+          </div>
+        )}
         <div className={styles.badges}>
           <span className={styles.categoryBadge}>{category}</span>
           <span className={`${styles.statusBadge} ${statusClassMap[status] || styles.statusAvailable}`}>

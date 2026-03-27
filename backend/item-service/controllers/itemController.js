@@ -163,8 +163,43 @@ const validateItemPayload = ({ title, category, condition, description, price, s
   return null;
 };
 
+const buildSellerPayload = (seller) => {
+  if (!seller) {
+    return null;
+  }
+
+  const name = `${seller.firstName || ''} ${seller.lastName || ''}`.trim();
+
+  return {
+    _id: seller._id,
+    name: name || 'Unknown Seller',
+    email: seller.universityEmail || '',
+    createdAt: seller.createdAt || null,
+    profileImage: seller.profileImage || '',
+  };
+};
+
+const buildItemPayload = (item) => {
+  const plain = item.toObject();
+  const images = getItemImageArray(plain);
+
+  return {
+    _id: plain._id,
+    title: plain.title,
+    description: plain.description,
+    price: plain.price,
+    category: plain.category,
+    condition: normalizeConditionValue(plain.condition),
+    status: normalizeStatusValue(plain.status),
+    images,
+    createdAt: plain.createdAt,
+    updatedAt: plain.updatedAt,
+    seller: buildSellerPayload(plain.seller),
+  };
+};
+
 const getAllItems = asyncHandler(async (req, res) => {
-  const { category, status } = req.query;
+  const { category, status, limit, excludeId } = req.query;
   const filter = {};
 
   if (category) {
@@ -172,27 +207,50 @@ const getAllItems = asyncHandler(async (req, res) => {
   }
 
   if (status) {
-    filter.status = status;
+    filter.status = normalizeStatusValue(status);
   }
 
-  const items = await Item.find(filter)
+  if (excludeId) {
+    filter._id = { $ne: excludeId };
+  }
+
+  let query = Item.find(filter)
     .populate('seller', 'firstName lastName universityEmail')
     .sort({ createdAt: -1 });
 
-  res.status(200).json(items);
+  if (limit && !Number.isNaN(Number(limit))) {
+    query = query.limit(Number(limit));
+  }
+
+  const items = await query;
+
+  const payload = items.map((item) => {
+    const plain = item.toObject();
+    return {
+      ...plain,
+      status: normalizeStatusValue(plain.status),
+      condition: normalizeConditionValue(plain.condition),
+      images: getItemImageArray(plain),
+      seller: buildSellerPayload(plain.seller),
+    };
+  });
+
+  res.status(200).json(payload);
 });
+
+const getItemsByCategory = getAllItems;
 
 const getItemById = asyncHandler(async (req, res) => {
   const item = await Item.findById(req.params.id).populate(
     'seller',
-    'firstName lastName universityEmail role phone'
+    'firstName lastName universityEmail createdAt profileImage'
   );
 
   if (!item) {
     return res.status(404).json({ message: 'Item not found' });
   }
 
-  return res.status(200).json(item);
+  return res.status(200).json(buildItemPayload(item));
 });
 
 const createItem = asyncHandler(async (req, res) => {
@@ -409,6 +467,7 @@ const deleteItem = asyncHandler(async (req, res) => {
 
 module.exports = {
   getAllItems,
+  getItemsByCategory,
   getItemById,
   createItem,
   getMyListings,

@@ -55,7 +55,6 @@ function App() {
 
         {/* Item Management Component */}
         <Route path="/marketplace" element={<MarketplacePage />} />
-        <Route path="/items/:id" element={<ItemDetailPage />} />
         <Route
           path="/items/new"
           element={
@@ -93,6 +92,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ItemPosterPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/items/:id"
+          element={
+            <ProtectedRoute>
+              <ItemDetailPage />
             </ProtectedRoute>
           }
         />
