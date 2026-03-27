@@ -17,37 +17,50 @@ import {
 
 const navigationItems = [
   {
-    id: "/user-dashboard",
+    id: "dashboard",
+    path: "/dashboard",
     name: "Dashboard",
     icon: LayoutDashboard,
     description: "Overview & stats"
   },
   {
-    id: "/items",
+    id: "marketplace",
+    path: "/marketplace",
     name: "Marketplace",
     icon: ShoppingBag,
     description: "Browse all items"
   },
   {
-    id: "/items/new",
+    id: "sell-item",
+    path: "/items/new",
     name: "Sell Item",
     icon: PlusCircle,
     description: "List a new item"
   },
   {
-    id: "/trust",
+    id: "cart",
+    path: "/cart",
+    name: "My Cart",
+    icon: History,
+    description: "Saved cart items"
+  },
+  {
+    id: "trust",
+    path: "/trust",
     name: "Trust & Security",
     icon: ShieldCheck,
     description: "Verification & reports"
   },
   {
-    id: "/profile",
+    id: "profile",
+    path: "/profile",
     name: "Profile",
     icon: User,
     description: "User settings"
   },
   {
-    id: "/admin-dashboard",
+    id: "admin-dashboard",
+    path: "/admin-dashboard",
     name: "Admin Hub",
     icon: ShieldCheck,
     description: "System management"
@@ -57,6 +70,19 @@ const navigationItems = [
 export function Sidebar({ isExpanded, setIsExpanded }) {
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
+
+  const isItemActive = (item) => {
+    if (item.id === 'dashboard') {
+      return location.pathname === '/' || location.pathname === '/dashboard';
+    }
+    if (item.id === 'marketplace') {
+      return location.pathname === '/marketplace';
+    }
+    if (item.id === 'cart') {
+      return location.pathname === '/cart';
+    }
+    return location.pathname === item.path;
+  };
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -113,12 +139,12 @@ export function Sidebar({ isExpanded, setIsExpanded }) {
         <nav className="flex-1 px-4 space-y-3 mt-4 overflow-y-auto scrollbar-hide">
           {navigationItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.id;
+            const isActive = isItemActive(item);
 
             return (
               <Link
                 key={item.id}
-                to={item.id}
+                to={item.path}
                 className={cn(
                   "relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group overflow-hidden",
                   isActive

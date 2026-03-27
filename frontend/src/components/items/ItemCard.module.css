@@ -1,0 +1,92 @@
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 16px 32px rgba(15, 27, 61, 0.12);
+}
+
+.imageWrapper {
+  position: relative;
+  height: 190px;
+  background: #e2e8f0;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.categoryBadge,
+.statusBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 6px 10px;
+  letter-spacing: 0.3px;
+}
+
+.categoryBadge {
+  background: #0f1b3d;
+  max-width: 62%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusAvailable {
+  background: #16a34a;
+}
+
+.statusSold {
+  background: #dc2626;
+}
+
+.statusReserved {
+  background: #ca8a04;
+}
+
+.content {
+  padding: 14px;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  color: #0f1b3d;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.price {
+  margin: 10px 0 6px;
+  color: #f97316;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.seller {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+}

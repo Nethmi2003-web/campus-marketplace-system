@@ -1,0 +1,54 @@
+.wrapper {
+  margin-bottom: 20px;
+}
+
+.label {
+  color: #334155;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+}
+
+.stepCircle {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.active {
+  background: #f97316;
+  color: #ffffff;
+  border: 1px solid #f97316;
+}
+
+.completed {
+  background: #0f1b3d;
+  color: #ffffff;
+  border: 1px solid #0f1b3d;
+}
+
+.inactive {
+  background: #ffffff;
+  color: #64748b;
+  border: 2px solid #0f1b3d;
+}
+
+.connector {
+  height: 2px;
+  flex: 1;
+  background: #cbd5e1;
+  margin: 0 8px;
+}
+
+.connectorDone {
+  background: #f97316;
+}

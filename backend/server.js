@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', require('./user-service/routes/userRoutes'));
 
 // Component 2 – Item Management
-app.use('/api/items', require('./item-management/routes/itemRoutes'));
+app.use('/api/items', require('./item-service/routes/itemRoutes'));
 
 // Component 3 – Transaction Management (Cart & Orders)
 app.use('/api/cart', require('./transaction-service/routes/cartRoutes'));

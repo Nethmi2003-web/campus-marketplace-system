@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, SlidersHorizontal, PackageSearch, X, Heart, ShoppingCart, Tag, Loader2, Clock } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Button, Badge, Input } from "./shared/UI";
 
@@ -149,6 +150,7 @@ const CATEGORIES = [
 ];
 
 export default function MarketplaceUI() {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -163,9 +165,12 @@ export default function MarketplaceUI() {
       
       // Fetch Marketplace Items
       const itemsRes = await axios.get("/api/items");
-      if (itemsRes.data.success) {
-        setItems(itemsRes.data.data);
-      }
+      const itemsPayload = Array.isArray(itemsRes.data)
+        ? itemsRes.data
+        : Array.isArray(itemsRes.data?.data)
+          ? itemsRes.data.data
+          : [];
+      setItems(itemsPayload);
 
       // Fetch User Wishlist to show already liked items
       if (userInfo.token) {
@@ -292,6 +297,12 @@ export default function MarketplaceUI() {
                 </button>
               )}
            </div>
+           <Button
+             onClick={() => navigate('/items/my-listings')}
+             className="h-14 rounded-lg px-5 bg-[#f97316] hover:bg-[#ea6c00] text-white font-semibold"
+           >
+             + Sell My Item
+           </Button>
            <Button variant="outline" className="h-14 rounded-2xl gap-2 border-white bg-white/50 backdrop-blur-md hover:border-primary/30 shadow-xl shadow-black/5 px-6">
               <SlidersHorizontal size={20} className="text-primary" />
               <span className="hidden sm:inline font-black text-xs uppercase tracking-widest text-primary">Filters</span>

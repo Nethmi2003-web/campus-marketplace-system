@@ -17,9 +17,12 @@ export function AdminListingsTab() {
     try {
       setLoading(true);
       const response = await axios.get("/api/items");
-      if (response.data.success) {
-        setItems(response.data.data);
-      }
+      const itemsPayload = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+      setItems(itemsPayload);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching items:", err);
