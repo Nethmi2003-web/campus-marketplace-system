@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { PlusCircle, Image as ImageIcon, Calendar as CalendarIcon, MapPin, Users, Loader2 } from "lucide-react";
+import { PlusCircle, Image as ImageIcon, Calendar as CalendarIcon, MapPin, Users, Loader2, Trash2, Edit } from "lucide-react";
 import { cn } from "../lib/utils";
 
 export function AdminEventsTab() {
@@ -8,6 +8,7 @@ export function AdminEventsTab() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -50,7 +51,7 @@ export function AdminEventsTab() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!imageFile) {
+    if (!imageFile && !editingId) {
       alert("Please select an image");
       return;
     }
@@ -60,32 +61,79 @@ export function AdminEventsTab() {
     Object.keys(formData).forEach(key => {
       data.append(key, formData[key]);
     });
-    data.append("image", imageFile);
+    if (imageFile) {
+      data.append("image", imageFile);
+    }
 
     try {
-      await axios.post("/api/events", data, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      alert("Event created successfully!");
-      setShowForm(false);
-      setImageFile(null);
-      setFormData({
-        name: "",
-        faculty: "Computing",
-        date: "",
-        time: "",
-        venue: "",
-        organizedTeam: "",
-        category: "General",
-        description: "",
-        status: "Upcoming",
-      });
+      const adminInfo = JSON.parse(localStorage.getItem("admin_userInfo") || "{}");
+      const config = { headers: { Authorization: `Bearer ${adminInfo.token}` } };
+      
+      if (editingId) {
+        await axios.put(`/api/events/${editingId}`, data, config);
+        alert("Event updated successfully!");
+      } else {
+        await axios.post("/api/events", data, config);
+        alert("Event created successfully!");
+      }
+      
+      resetForm();
       fetchEvents();
     } catch (error) {
-      console.error("Error creating event:", error);
-      alert("Failed to create event");
+      console.error("Error saving event:", error);
+      alert(editingId ? "Failed to update event" : "Failed to create event");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setImageFile(null);
+    setFormData({
+      name: "",
+      faculty: "Computing",
+      date: "",
+      time: "",
+      venue: "",
+      organizedTeam: "",
+      category: "General",
+      description: "",
+      status: "Upcoming",
+    });
+  };
+
+  const handleEditClick = (eventItem) => {
+    setFormData({
+      name: eventItem.name,
+      faculty: eventItem.faculty,
+      date: eventItem.date ? new Date(eventItem.date).toISOString().split('T')[0] : "",
+      time: eventItem.time || "",
+      venue: eventItem.venue,
+      organizedTeam: eventItem.organizedTeam,
+      category: eventItem.category,
+      description: eventItem.description || "",
+      status: eventItem.status,
+    });
+    setEditingId(eventItem._id);
+    setImageFile(null); 
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteClick = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+    try {
+      const adminInfo = JSON.parse(localStorage.getItem("admin_userInfo") || "{}");
+      await axios.delete(`/api/events/${id}`, {
+        headers: { Authorization: `Bearer ${adminInfo.token}` }
+      });
+      alert("Event deleted successfully!");
+      fetchEvents();
+    } catch (error) {
+       console.error("Error deleting event:", error);
+       alert("Failed to delete event");
     }
   };
 
@@ -97,7 +145,10 @@ export function AdminEventsTab() {
           <p className="text-muted-foreground font-medium">Manage university events and activities.</p>
         </div>
         <button 
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) resetForm();
+            else setShowForm(true);
+          }}
           className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl font-bold border-2 border-primary/20 shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
         >
           {showForm ? "Cancel" : <><PlusCircle size={18} /> Add New Event</>}
@@ -106,7 +157,7 @@ export function AdminEventsTab() {
 
       {showForm && (
         <div className="bg-white p-6 rounded-2xl border-2 border-border shadow-sm">
-          <h3 className="text-xl font-bold text-primary mb-4">Create New Event</h3>
+          <h3 className="text-xl font-bold text-primary mb-4">{editingId ? "Update Event" : "Create New Event"}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -161,9 +212,9 @@ export function AdminEventsTab() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-bold text-foreground">Event Flyer/Image *</label>
+              <label className="text-sm font-bold text-foreground">Event Flyer/Image {editingId ? "(Optional)" : "*"}</label>
               <div className="w-full p-4 border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/10 hover:bg-muted/30 transition-all cursor-pointer">
-                <input required type="file" accept="image/jpeg, image/png, image/webp" onChange={handleImageChange} className="w-full h-full" />
+                <input required={!editingId} type="file" accept="image/jpeg, image/png, image/webp" onChange={handleImageChange} className="w-full h-full" />
               </div>
               {imageFile && <p className="text-sm text-green-600 font-medium">Selected: {imageFile.name}</p>}
             </div>
@@ -176,7 +227,7 @@ export function AdminEventsTab() {
             <div className="pt-4">
               <button disabled={isSubmitting} type="submit" className="w-full bg-secondary hover:bg-secondary/90 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2">
                 {isSubmitting ? <Loader2 className="animate-spin" /> : <ImageIcon size={18} />}
-                {isSubmitting ? "Uploading & Saving..." : "Publish Event"}
+                {isSubmitting ? "Saving..." : (editingId ? "Update Event" : "Publish Event")}
               </button>
             </div>
           </form>
@@ -214,6 +265,14 @@ export function AdminEventsTab() {
                     <Users size={16} />
                     <span className="truncate">{event.organizedTeam}</span>
                   </div>
+                </div>
+                <div className="mt-4 pt-4 border-t-2 border-border flex justify-end gap-2">
+                  <button onClick={() => handleEditClick(event)} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                    <Edit size={18} />
+                  </button>
+                  <button onClick={() => handleDeleteClick(event._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </div>
             </div>

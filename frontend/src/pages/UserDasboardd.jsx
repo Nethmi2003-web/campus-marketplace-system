@@ -34,10 +34,7 @@ function UserNavbar({ user, setActiveTab }) {
         </div>
       </div>
       
-      <div className="hidden md:flex relative max-w-md w-full mx-10">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input type="text" placeholder="Search items, events, users..." className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-muted/30 border-2 border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all font-medium" />
-      </div>
+      {/* Search bar removed as per user request */}
 
       <div className="flex items-center gap-6">
         <button 
@@ -61,7 +58,6 @@ function UserNavbar({ user, setActiveTab }) {
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-black text-primary tracking-tight leading-none mb-1">{user?.firstName || 'Student'}</p>
-            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{user?.faculty || 'Faculty'}</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-110 transition-transform overflow-hidden">
              {user?.profileImage ? (
