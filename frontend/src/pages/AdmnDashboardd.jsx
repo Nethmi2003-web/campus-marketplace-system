@@ -6,9 +6,9 @@ import {
   Users, ShoppingBag, AlertTriangle, TrendingUp, ShieldCheck, 
   ArrowUpRight, ArrowDownRight, LayoutDashboard,
   LogOut, Bell, Settings, Activity, Receipt, BadgeDollarSign, Calendar,
-  Menu, X, Search, Filter
+  Menu, X, Search, Filter, ChevronDown, Info, Eye, Trash2, ShieldAlert
 } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar, Legend } from "recharts";
 import { AdminPricingTab } from "../components/AdminPricingTab";
 import { AdminTransactionsTab } from "../components/AdminTransactionsTab";
 import { AdminListingsTab } from "../components/AdminListingsTab";
@@ -171,6 +171,80 @@ function EmptyState({ icon: Icon, title, description }) {
   );
 }
 
+function RatingStars({ value }) {
+  return (
+    <div className="flex items-center gap-0.5 text-amber-500" aria-label={`Rating ${value} out of 5`}>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <span key={index} className={index < value ? 'opacity-100' : 'opacity-20'}>★</span>
+      ))}
+    </div>
+  );
+}
+
+function ConfirmDialog({ open, title, description, confirmLabel, confirmTone = 'danger', onConfirm, onCancel }) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
+      <div className="w-full max-w-md rounded-3xl border bg-card p-6 shadow-2xl">
+        <h3 className="text-xl font-black text-primary">{title}</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button type="button" onClick={onCancel} className="px-4 py-2 rounded-xl border text-sm font-bold bg-background">
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className={cn(
+              'px-4 py-2 rounded-xl text-sm font-bold text-white',
+              confirmTone === 'danger' && 'bg-red-600',
+              confirmTone === 'warning' && 'bg-orange-600',
+              confirmTone === 'primary' && 'bg-primary'
+            )}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DropdownMenu({ open, items, onClose }) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl border bg-card shadow-2xl z-30 overflow-hidden">
+      {items.map((item) => (
+        <button
+          key={item.label}
+          type="button"
+          disabled={item.disabled}
+          onClick={() => {
+            if (!item.disabled) {
+              item.onClick();
+            }
+            onClose();
+          }}
+          className={cn(
+            'w-full px-4 py-3 text-left text-sm font-semibold flex items-center gap-2 hover:bg-muted transition-colors',
+            item.variant === 'danger' && 'text-red-600 hover:bg-red-50',
+            item.disabled && 'opacity-50 cursor-not-allowed'
+          )}
+        >
+          {item.icon}
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // -------------------------------------------------------------
 // MAIN ADMIN DASHBOARD
 // -------------------------------------------------------------
@@ -191,6 +265,73 @@ export default function AdminDashboard() {
   const [userRoleFilter, setUserRoleFilter] = useState('all');
   const [moderationSearch, setModerationSearch] = useState('');
   const [moderationQueue, setModerationQueue] = useState([]);
+  const [feedbackTab, setFeedbackTab] = useState('all-reviews');
+  const [feedbackSearch, setFeedbackSearch] = useState('');
+  const [feedbackStatusFilter, setFeedbackStatusFilter] = useState('all');
+  const [feedbackSentimentFilter, setFeedbackSentimentFilter] = useState('all');
+  const [feedbackRatingFilter, setFeedbackRatingFilter] = useState('all');
+  const [feedbackDateRange, setFeedbackDateRange] = useState('30d');
+  const [reviewMenuOpenId, setReviewMenuOpenId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [expandedReviewIds, setExpandedReviewIds] = useState([]);
+  const [profileModalUser, setProfileModalUser] = useState(null);
+  const [confirmState, setConfirmState] = useState({ open: false, action: null, review: null });
+  const [highlightedSellerIds, setHighlightedSellerIds] = useState([]);
+  const [feedbackReviews, setFeedbackReviews] = useState([
+    {
+      _id: 'review-1',
+      userId: 'u-101',
+      itemId: 'item-201',
+      sellerId: 'seller-11',
+      rating: 5,
+      comment: 'Great price and fast pickup. Seller replied quickly.',
+      sentiment: 'positive',
+      isFlagged: false,
+      status: 'approved',
+      reportReason: '',
+      createdAt: '2026-04-01T08:45:00.000Z',
+    },
+    {
+      _id: 'review-2',
+      userId: 'u-102',
+      itemId: 'item-202',
+      sellerId: 'seller-12',
+      rating: 2,
+      comment: 'Pricing felt unfair and the listing description was misleading. Delivery was late.',
+      sentiment: 'negative',
+      isFlagged: true,
+      status: 'flagged',
+      reportReason: 'Spam and Toxic Language',
+      createdAt: '2026-04-02T11:20:00.000Z',
+    },
+    {
+      _id: 'review-3',
+      userId: 'u-103',
+      itemId: 'item-203',
+      sellerId: 'seller-11',
+      rating: 4,
+      comment: 'Good quality overall. Pickup took longer than expected but item condition was okay.',
+      sentiment: 'neutral',
+      isFlagged: false,
+      status: 'approved',
+      reportReason: '',
+      createdAt: '2026-04-02T16:10:00.000Z',
+    },
+    {
+      _id: 'review-4',
+      userId: 'u-104',
+      itemId: 'item-204',
+      sellerId: 'seller-13',
+      rating: 1,
+      comment: 'Fake looking review text copied many times with abusive wording.',
+      sentiment: 'negative',
+      isFlagged: true,
+      status: 'flagged',
+      reportReason: 'Duplicate and Fake Review',
+      createdAt: '2026-04-03T06:15:00.000Z',
+    },
+  ]);
   const [settingsState, setSettingsState] = useState(() => {
     const saved = localStorage.getItem('admin_platform_settings');
     if (!saved) {
@@ -259,6 +400,154 @@ export default function AdminDashboard() {
       return !q || title.includes(q) || category.includes(q);
     });
   }, [moderationQueue, moderationSearch]);
+
+  const reviewRows = useMemo(() => {
+    return feedbackReviews.map((review) => {
+      const reviewer = users.find((user) => user._id === review.userId);
+      const item = items.find((listing) => listing._id === review.itemId);
+      const seller = users.find((user) => user._id === review.sellerId);
+      const reviewerName = reviewer ? `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim() : review.userId;
+      const itemName = item?.title || review.itemId;
+      const sellerName = seller ? `${seller.firstName || ''} ${seller.lastName || ''}`.trim() : review.sellerId;
+
+      return {
+        ...review,
+        reviewerName: reviewerName || 'Unknown Buyer',
+        itemName,
+        sellerName: sellerName || 'Unknown Seller',
+      };
+    });
+  }, [feedbackReviews, items, users]);
+
+  const filteredReviews = useMemo(() => {
+    const dateCutoff = feedbackDateRange === 'all'
+      ? null
+      : (() => {
+          const now = new Date();
+          const days = feedbackDateRange === '7d' ? 7 : feedbackDateRange === '30d' ? 30 : 90;
+          now.setDate(now.getDate() - days);
+          return now;
+        })();
+
+    const q = feedbackSearch.toLowerCase();
+    return reviewRows.filter((review) => {
+      const reviewDate = new Date(review.createdAt);
+      const statusMatch = feedbackStatusFilter === 'all' || review.status === feedbackStatusFilter;
+      const sentimentMatch = feedbackSentimentFilter === 'all' || review.sentiment === feedbackSentimentFilter;
+      const ratingMatch = feedbackRatingFilter === 'all' || Number(review.rating) === Number(feedbackRatingFilter);
+      const dateMatch = !dateCutoff || reviewDate >= dateCutoff;
+      const matchesSearch = !q
+        || review.reviewerName.toLowerCase().includes(q)
+        || review.itemName.toLowerCase().includes(q)
+        || review.comment.toLowerCase().includes(q)
+        || review.sellerName.toLowerCase().includes(q);
+
+      if (feedbackTab === 'flagged-reviews') {
+        return matchesSearch && statusMatch && sentimentMatch && ratingMatch && dateMatch && (review.isFlagged || review.status === 'flagged');
+      }
+
+      return matchesSearch && statusMatch && sentimentMatch && ratingMatch && dateMatch;
+    });
+  }, [feedbackDateRange, feedbackRatingFilter, feedbackSearch, feedbackSentimentFilter, feedbackStatusFilter, feedbackTab, reviewRows]);
+
+  const paginatedReviews = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredReviews.slice(start, start + pageSize);
+  }, [filteredReviews, page, pageSize]);
+
+  const feedbackStats = useMemo(() => {
+    const total = reviewRows.length;
+    const sentimentBuckets = reviewRows.reduce((acc, review) => {
+      acc[review.sentiment] = (acc[review.sentiment] || 0) + 1;
+      return acc;
+    }, { positive: 0, neutral: 0, negative: 0 });
+
+    const averageRating = total > 0
+      ? reviewRows.reduce((sum, review) => sum + Number(review.rating || 0), 0) / total
+      : 0;
+
+    const flaggedCount = reviewRows.filter((review) => review.isFlagged || review.status === 'flagged').length;
+
+    return {
+      total,
+      averageRating,
+      flaggedCount,
+      sentimentBuckets,
+    };
+  }, [reviewRows]);
+
+  const sellerFeedback = useMemo(() => {
+    const grouped = new Map();
+
+    reviewRows.forEach((review) => {
+      const current = grouped.get(review.sellerId) || {
+        sellerId: review.sellerId,
+        sellerName: review.sellerName,
+        totalReviews: 0,
+        ratingSum: 0,
+        positiveCount: 0,
+        neutralCount: 0,
+        negativeCount: 0,
+        flaggedCount: 0,
+      };
+
+      current.totalReviews += 1;
+      current.ratingSum += Number(review.rating || 0);
+      current[`${review.sentiment}Count`] += 1;
+      if (review.isFlagged || review.status === 'flagged') {
+        current.flaggedCount += 1;
+      }
+
+      grouped.set(review.sellerId, current);
+    });
+
+    return Array.from(grouped.values())
+      .map((seller) => {
+        const averageRating = seller.totalReviews > 0 ? seller.ratingSum / seller.totalReviews : 0;
+        const trustScore = Math.max(
+          45,
+          Math.min(
+            100,
+            Math.round((averageRating / 5) * 70 + (seller.positiveCount / Math.max(seller.totalReviews, 1)) * 25 - (seller.flaggedCount / Math.max(seller.totalReviews, 1)) * 20)
+          )
+        );
+
+        return {
+          ...seller,
+          averageRating,
+          trustScore,
+          isHighlighted: highlightedSellerIds.includes(seller.sellerId),
+        };
+      })
+      .sort((left, right) => right.trustScore - left.trustScore);
+  }, [highlightedSellerIds, reviewRows]);
+
+  const reviewInsights = useMemo(() => {
+    const lowerComments = reviewRows.map((review) => review.comment.toLowerCase());
+    const keywordBuckets = [
+      { label: 'Pricing complaints', keywords: ['price', 'pricing', 'expensive', 'cost'] },
+      { label: 'Delivery delays', keywords: ['delivery', 'late', 'delay', 'pickup'] },
+      { label: 'Quality issues', keywords: ['quality', 'broken', 'damaged', 'fake'] },
+      { label: 'Spam / toxic content', keywords: ['spam', 'toxic', 'abuse', 'fake review'] },
+    ];
+
+    return keywordBuckets.map((bucket) => ({
+      label: bucket.label,
+      count: lowerComments.filter((comment) => bucket.keywords.some((keyword) => comment.includes(keyword))).length,
+    })).filter((bucket) => bucket.count > 0);
+  }, [reviewRows]);
+
+  const feedbackChartData = useMemo(() => ([
+    { name: 'Positive', value: feedbackStats.sentimentBuckets.positive, fill: '#16a34a' },
+    { name: 'Neutral', value: feedbackStats.sentimentBuckets.neutral, fill: '#64748b' },
+    { name: 'Negative', value: feedbackStats.sentimentBuckets.negative, fill: '#dc2626' },
+  ]), [feedbackStats]);
+
+  const complaintData = useMemo(() => {
+    return reviewInsights.length > 0
+      ? reviewInsights.map((insight) => ({ name: insight.label, value: insight.count }))
+      : [{ name: 'No data', value: 0 }];
+  }, [reviewInsights]);
   
   React.useEffect(() => {
     if (!userInfo.token || userInfo.role !== 'admin') {
@@ -365,6 +654,92 @@ export default function AdminDashboard() {
       return;
     }
     setModerationQueue((prev) => prev.filter((item) => item._id !== id));
+  };
+
+  const updateReview = (reviewId, updater) => {
+    setFeedbackReviews((prev) => prev.map((review) => {
+      if (review._id !== reviewId) {
+        return review;
+      }
+
+      const patch = typeof updater === 'function' ? updater(review) : updater;
+      return { ...review, ...patch };
+    }));
+  };
+
+  const handleApproveReview = (reviewId) => {
+    if (!isAdmin) {
+      return;
+    }
+    updateReview(reviewId, { status: 'approved', isFlagged: false, reportReason: '' });
+  };
+
+  const handleHideReview = (reviewId) => {
+    if (!isAdmin) {
+      return;
+    }
+    updateReview(reviewId, { status: 'hidden', isFlagged: true });
+  };
+
+  const handleDeleteReview = (reviewId) => {
+    if (!isAdmin) {
+      return;
+    }
+    setFeedbackReviews((prev) => prev.filter((review) => review._id !== reviewId));
+  };
+
+  const handleWarnUserFromReview = (review) => {
+    if (!isAdmin) {
+      return;
+    }
+    handleBlockToggle(review.userId);
+    updateReview(review._id, { status: 'flagged', isFlagged: true });
+  };
+
+  const handleToggleHighlightSeller = (sellerId) => {
+    if (!isAdmin) {
+      return;
+    }
+    setHighlightedSellerIds((prev) => (
+      prev.includes(sellerId)
+        ? prev.filter((id) => id !== sellerId)
+        : [...prev, sellerId]
+    ));
+  };
+
+  const openConfirm = (action, review) => {
+    setConfirmState({ open: true, action, review });
+    setReviewMenuOpenId(null);
+  };
+
+  const closeConfirm = () => setConfirmState({ open: false, action: null, review: null });
+
+  const executeConfirmedAction = () => {
+    if (!confirmState.review || !confirmState.action) {
+      return;
+    }
+
+    const review = confirmState.review;
+    if (confirmState.action === 'delete') {
+      handleDeleteReview(review._id);
+    }
+    if (confirmState.action === 'warn') {
+      handleWarnUserFromReview(review);
+    }
+    if (confirmState.action === 'hide') {
+      handleHideReview(review._id);
+    }
+
+    closeConfirm();
+  };
+
+  const openUserProfile = (userId) => {
+    const user = users.find((entry) => entry._id === userId) || { _id: userId, firstName: 'Unknown', lastName: 'User', role: 'student' };
+    setProfileModalUser(user);
+  };
+
+  const toggleReviewExpanded = (reviewId) => {
+    setExpandedReviewIds((prev) => (prev.includes(reviewId) ? prev.filter((id) => id !== reviewId) : [...prev, reviewId]));
   };
 
   const saveSettings = () => {
@@ -601,57 +976,522 @@ export default function AdminDashboard() {
           {activeTab === 'moderation' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <h1 className="text-3xl font-black text-primary">Trust & Safety</h1>
-              <p className="text-muted-foreground font-medium">Review flagged content and reported listings</p>
+              <p className="text-muted-foreground font-medium">Feedback management, moderation controls, seller trust, and AI insights</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="rounded-2xl border bg-card p-5 shadow-xl shadow-black/5">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total Reviews</p>
+                  <p className="mt-2 text-3xl font-black text-primary">{feedbackStats.total}</p>
+                </div>
+                <div className="rounded-2xl border bg-card p-5 shadow-xl shadow-black/5">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Average Rating</p>
+                  <p className="mt-2 text-3xl font-black text-primary">{feedbackStats.averageRating.toFixed(1)}</p>
+                </div>
+                <div className="rounded-2xl border bg-card p-5 shadow-xl shadow-black/5">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Flagged Reviews</p>
+                  <p className="mt-2 text-3xl font-black text-primary">{feedbackStats.flaggedCount}</p>
+                </div>
+                <div className="rounded-2xl border bg-card p-5 shadow-xl shadow-black/5">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Positive Sentiment</p>
+                  <p className="mt-2 text-3xl font-black text-primary">{feedbackStats.sentimentBuckets.positive}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'all-reviews', label: 'All Reviews' },
+                  { id: 'flagged-reviews', label: 'Flagged Reviews' },
+                  { id: 'seller-ratings', label: 'Seller Ratings' },
+                  { id: 'insights', label: 'Insights' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setFeedbackTab(tab.id);
+                      setPage(1);
+                    }}
+                    className={cn(
+                      'px-4 py-2 rounded-full text-sm font-bold transition-all border',
+                      feedbackTab === tab.id
+                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                        : 'bg-card text-muted-foreground border-border hover:text-foreground hover:border-primary/40'
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="rounded-2xl border bg-card shadow-xl p-6 space-y-4">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={moderationSearch}
-                    onChange={(event) => setModerationSearch(event.target.value)}
-                    placeholder="Search flagged listings"
-                    className="w-full rounded-xl border bg-background pl-9 pr-3 h-11 text-sm"
-                  />
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={feedbackSearch}
+                        onChange={(event) => {
+                          setFeedbackSearch(event.target.value);
+                          setPage(1);
+                        }}
+                        placeholder="Search reviews, users, items, or sellers"
+                        className="w-full rounded-xl border bg-background pl-9 pr-3 h-11 text-sm"
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: 'All', value: 'all' },
+                        { label: 'Approved', value: 'approved' },
+                        { label: 'Flagged', value: 'flagged' },
+                        { label: 'Hidden', value: 'hidden' },
+                      ].map((chip) => (
+                        <button
+                          key={chip.label}
+                          type="button"
+                          onClick={() => {
+                            setFeedbackStatusFilter(chip.value);
+                            setPage(1);
+                          }}
+                          className={cn(
+                            'px-3 py-1.5 rounded-full text-xs font-bold border',
+                            feedbackStatusFilter === chip.value ? 'bg-primary text-white border-primary' : 'bg-background text-muted-foreground border-border'
+                          )}
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                      {['positive', 'neutral', 'negative'].map((sentiment) => (
+                        <button
+                          key={sentiment}
+                          type="button"
+                          onClick={() => {
+                            setFeedbackSentimentFilter((prev) => (prev === sentiment ? 'all' : sentiment));
+                            setPage(1);
+                          }}
+                          className={cn(
+                            'px-3 py-1.5 rounded-full text-xs font-bold border capitalize',
+                            feedbackSentimentFilter === sentiment ? 'bg-secondary text-white border-secondary' : 'bg-background text-muted-foreground border-border'
+                          )}
+                        >
+                          {sentiment}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                      Rating
+                      <select
+                        value={feedbackRatingFilter}
+                        onChange={(event) => {
+                          setFeedbackRatingFilter(event.target.value);
+                          setPage(1);
+                        }}
+                        className="mt-1 w-full rounded-xl border bg-background px-3 h-11 text-sm normal-case tracking-normal font-normal"
+                      >
+                        <option value="all">All ratings</option>
+                        <option value="5">5 star</option>
+                        <option value="4">4 star</option>
+                        <option value="3">3 star</option>
+                        <option value="2">2 star</option>
+                        <option value="1">1 star</option>
+                      </select>
+                    </label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                      Date range
+                      <select
+                        value={feedbackDateRange}
+                        onChange={(event) => {
+                          setFeedbackDateRange(event.target.value);
+                          setPage(1);
+                        }}
+                        className="mt-1 w-full rounded-xl border bg-background px-3 h-11 text-sm normal-case tracking-normal font-normal"
+                      >
+                        <option value="7d">Last 7 days</option>
+                        <option value="30d">Last 30 days</option>
+                        <option value="90d">Last 90 days</option>
+                        <option value="all">All time</option>
+                      </select>
+                    </label>
+                  </div>
                 </div>
 
                 {dashboardLoading && <div className="h-48 rounded-xl bg-muted animate-pulse" />}
 
-                {!dashboardLoading && filteredModerationQueue.length === 0 && (
+                {!dashboardLoading && feedbackTab === 'all-reviews' && filteredReviews.length === 0 && (
                   <EmptyState
-                    icon={AlertTriangle}
-                    title="No flagged listings"
-                    description="Moderation queue is empty right now."
+                    icon={Receipt}
+                    title="No reviews found"
+                    description="Try another search term or switch filters."
                   />
                 )}
 
-                {!dashboardLoading && filteredModerationQueue.length > 0 && (
-                  <div className="space-y-3">
-                    {filteredModerationQueue.map((entry) => (
-                      <div key={entry._id} className="border rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-3 justify-between">
-                        <div>
-                          <p className="font-bold text-primary">{entry.title}</p>
-                          <p className="text-xs text-muted-foreground">{entry.category} - {entry.reason}</p>
-                        </div>
-                        <div className="flex gap-2">
+                {!dashboardLoading && feedbackTab === 'all-reviews' && filteredReviews.length > 0 && (
+                  <>
+                    <div className="overflow-x-auto rounded-xl border">
+                      <table className="w-full text-left text-sm">
+                        <thead className="bg-muted/40">
+                          <tr>
+                            <th className="px-4 py-3">User</th>
+                            <th className="px-4 py-3">Item</th>
+                            <th className="px-4 py-3">Rating</th>
+                            <th className="px-4 py-3">Review text</th>
+                            <th className="px-4 py-3">Date</th>
+                            <th className="px-4 py-3">Status</th>
+                            <th className="px-4 py-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {paginatedReviews.map((review) => {
+                            const isExpanded = expandedReviewIds.includes(review._id);
+                            return (
+                              <tr key={review._id} className="align-top">
+                                <td className="px-4 py-3">
+                                  <button type="button" onClick={() => openUserProfile(review.userId)} className="font-bold text-foreground hover:text-primary text-left">
+                                    {review.reviewerName}
+                                  </button>
+                                  <p className="text-[11px] text-muted-foreground">Seller: {review.sellerName}</p>
+                                </td>
+                                <td className="px-4 py-3">{review.itemName}</td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-black text-primary">{review.rating}/5</span>
+                                    <RatingStars value={review.rating} />
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 max-w-md">
+                                  <p className="text-sm text-foreground">
+                                    {isExpanded || review.comment.length <= 95 ? review.comment : `${review.comment.slice(0, 95)}...`}
+                                  </p>
+                                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                    <p className="text-[11px] text-muted-foreground capitalize">Sentiment: {review.sentiment}</p>
+                                    {(review.reportReason ? review.reportReason.split(' and ') : ['Review']).map((tag) => (
+                                      <span key={`${review._id}-${tag}`} className="text-[10px] px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold">
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  {review.comment.length > 95 && (
+                                    <button type="button" onClick={() => toggleReviewExpanded(review._id)} className="mt-2 text-xs font-bold text-primary hover:underline">
+                                      {isExpanded ? 'Show less' : 'View full review'}
+                                    </button>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString()}</td>
+                                <td className="px-4 py-3">
+                                  <span className={cn(
+                                    'text-xs px-2 py-1 rounded-full font-bold capitalize',
+                                    review.status === 'approved' && 'bg-green-100 text-green-700',
+                                    review.status === 'flagged' && 'bg-red-100 text-red-700',
+                                    review.status === 'hidden' && 'bg-slate-100 text-slate-700'
+                                  )}>
+                                    {review.status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <div className="relative inline-block text-left">
+                                    <button
+                                      type="button"
+                                      onClick={() => setReviewMenuOpenId((prev) => (prev === review._id ? null : review._id))}
+                                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-white"
+                                    >
+                                      Actions
+                                      <ChevronDown size={14} />
+                                    </button>
+                                    <DropdownMenu
+                                      open={reviewMenuOpenId === review._id}
+                                      onClose={() => setReviewMenuOpenId(null)}
+                                      items={[
+                                        {
+                                          label: review.status === 'approved' ? 'Approved' : 'Approve',
+                                          icon: <ShieldCheck size={14} />,
+                                          disabled: review.status === 'approved',
+                                          onClick: () => handleApproveReview(review._id),
+                                        },
+                                        {
+                                          label: review.status === 'hidden' ? 'Hidden' : 'Hide',
+                                          icon: <Eye size={14} />,
+                                          disabled: review.status === 'hidden',
+                                          onClick: () => openConfirm('hide', review),
+                                        },
+                                        {
+                                          label: 'Warn User',
+                                          icon: <ShieldAlert size={14} />,
+                                          onClick: () => openConfirm('warn', review),
+                                        },
+                                        {
+                                          label: 'Delete',
+                                          icon: <Trash2 size={14} />,
+                                          variant: 'danger',
+                                          onClick: () => openConfirm('delete', review),
+                                        },
+                                      ]}
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {Math.min((page - 1) * pageSize + 1, filteredReviews.length)} - {Math.min(page * pageSize, filteredReviews.length)} of {filteredReviews.length} reviews
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={pageSize}
+                          onChange={(event) => {
+                            setPageSize(Number(event.target.value));
+                            setPage(1);
+                          }}
+                          className="rounded-xl border bg-background px-3 h-11 text-sm"
+                        >
+                          <option value={5}>5 / page</option>
+                          <option value={10}>10 / page</option>
+                          <option value={20}>20 / page</option>
+                        </select>
+                        <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            disabled={!isAdmin}
-                            onClick={() => handleModerationAction(entry._id)}
-                            className={cn('px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white', !isAdmin && 'opacity-60 cursor-not-allowed')}
+                            disabled={page === 1}
+                            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                            className={cn('px-3 py-2 rounded-xl border text-sm font-bold', page === 1 && 'opacity-50 cursor-not-allowed')}
+                          >
+                            Prev
+                          </button>
+                          <button
+                            type="button"
+                            disabled={page * pageSize >= filteredReviews.length}
+                            onClick={() => setPage((prev) => prev + 1)}
+                            className={cn('px-3 py-2 rounded-xl border text-sm font-bold', page * pageSize >= filteredReviews.length && 'opacity-50 cursor-not-allowed')}
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {!dashboardLoading && feedbackTab === 'flagged-reviews' && filteredReviews.length === 0 && (
+                  <EmptyState
+                    icon={AlertTriangle}
+                    title="No flagged reviews"
+                    description="Reported or toxic reviews will appear here for review."
+                  />
+                )}
+
+                {!dashboardLoading && feedbackTab === 'flagged-reviews' && filteredReviews.length > 0 && (
+                  <div className="space-y-3">
+                    {filteredReviews.map((review) => (
+                      <div key={review._id} className="border rounded-xl p-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div className="space-y-2">
+                          <div>
+                            <p className="font-bold text-primary">{review.itemName}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <button type="button" onClick={() => openUserProfile(review.userId)} className="text-xs text-muted-foreground hover:text-primary font-semibold">
+                                Buyer: {review.reviewerName}
+                              </button>
+                              <span className="text-xs text-muted-foreground">|</span>
+                              <button type="button" onClick={() => openUserProfile(review.sellerId)} className="text-xs text-muted-foreground hover:text-primary font-semibold">
+                                Seller: {review.sellerName}
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-foreground">{review.comment}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(review.reportReason ? review.reportReason.split(' and ') : ['Flagged by moderation system']).map((tag) => (
+                              <span key={`${review._id}-${tag}`} className="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700 font-black uppercase tracking-widest">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={!isAdmin || review.status === 'approved'}
+                            onClick={() => handleApproveReview(review._id)}
+                            className={cn('px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white', (!isAdmin || review.status === 'approved') && 'opacity-60 cursor-not-allowed')}
                           >
                             Approve
                           </button>
                           <button
                             type="button"
                             disabled={!isAdmin}
-                            onClick={() => handleModerationAction(entry._id)}
+                            onClick={() => openConfirm('hide', review)}
+                            className={cn('px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-white', !isAdmin && 'opacity-60 cursor-not-allowed')}
+                          >
+                            Hide
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!isAdmin}
+                            onClick={() => openConfirm('warn', review)}
+                            className={cn('px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-600 text-white', !isAdmin && 'opacity-60 cursor-not-allowed')}
+                          >
+                            Warn User
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!isAdmin}
+                            onClick={() => openConfirm('delete', review)}
                             className={cn('px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600 text-white', !isAdmin && 'opacity-60 cursor-not-allowed')}
                           >
-                            Reject
+                            Delete
                           </button>
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {!dashboardLoading && feedbackTab === 'seller-ratings' && (
+                  <div className="space-y-3">
+                    {sellerFeedback.length === 0 && (
+                      <EmptyState
+                        icon={ShieldCheck}
+                        title="No seller feedback yet"
+                        description="Seller ratings will populate once buyers leave reviews."
+                      />
+                    )}
+                    {sellerFeedback.map((seller) => (
+                      <div key={seller.sellerId} className="border rounded-xl p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-primary">{seller.sellerName}</p>
+                            {seller.isHighlighted && <span className="text-[10px] px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-black uppercase tracking-widest">Highlighted</span>}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">{seller.totalReviews} reviews | {seller.positiveCount} positive | {seller.flaggedCount} flagged</p>
+                        </div>
+                        <div className="flex flex-col md:items-end gap-2">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Average Rating</p>
+                              <p className="text-2xl font-black text-primary">{seller.averageRating.toFixed(1)}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Trust Score</p>
+                              <p className="text-2xl font-black text-primary" title="Based on ratings, flagged reviews, and sentiment mix.">{seller.trustScore}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!isAdmin}
+                            onClick={() => handleToggleHighlightSeller(seller.sellerId)}
+                            className={cn('px-3 py-1.5 rounded-lg text-xs font-bold bg-secondary text-white self-start md:self-end', !isAdmin && 'opacity-60 cursor-not-allowed')}
+                          >
+                            {seller.isHighlighted ? 'Remove Highlight' : 'Highlight Seller'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!dashboardLoading && feedbackTab === 'insights' && (
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <div className="rounded-xl border p-5">
+                      <h3 className="font-black text-primary text-lg">Sentiment Breakdown</h3>
+                      <div className="mt-4 h-72">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsPieChart>
+                            <Pie data={feedbackChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={4}>
+                              {feedbackChartData.map((entry) => (
+                                <Cell key={entry.name} fill={entry.fill} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                          </RechartsPieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border p-5">
+                      <h3 className="font-black text-primary text-lg">AI Insights</h3>
+                      <div className="mt-4 h-72">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={complaintData}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} />
+                            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                            <Tooltip />
+                            <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="hsl(var(--primary))" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="mt-5 space-y-3">
+                        {reviewInsights.length === 0 && (
+                          <p className="text-sm text-muted-foreground">No strong complaint patterns detected yet.</p>
+                        )}
+                        {reviewInsights.map((insight) => (
+                          <div key={insight.label} className="flex items-center justify-between rounded-xl border px-4 py-3">
+                            <span className="text-sm font-semibold text-foreground">{insight.label}</span>
+                            <span className="text-sm font-black text-primary">{insight.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-5 rounded-xl bg-primary/5 p-4 text-sm text-foreground flex items-start gap-2">
+                        <Info size={16} className="mt-0.5 shrink-0 text-primary" />
+                        <p>Trust score is derived from rating average, flagged review share, and sentiment mix. Repeated flags can reduce trust even when ratings look healthy.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <ConfirmDialog
+                  open={confirmState.open}
+                  title={confirmState.action === 'delete' ? 'Delete review?' : confirmState.action === 'warn' ? 'Warn user?' : 'Hide review?'}
+                  description={confirmState.action === 'delete'
+                    ? 'This permanently removes the review from the moderation console.'
+                    : confirmState.action === 'warn'
+                      ? 'This will warn the review author and mark the review as flagged.'
+                      : 'This hides the review from public visibility while keeping it available to admins.'}
+                  confirmLabel={confirmState.action === 'delete' ? 'Delete' : confirmState.action === 'warn' ? 'Warn User' : 'Hide'}
+                  confirmTone={confirmState.action === 'delete' ? 'danger' : 'warning'}
+                  onConfirm={executeConfirmedAction}
+                  onCancel={closeConfirm}
+                />
+
+                {profileModalUser && (
+                  <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
+                    <div className="w-full max-w-lg rounded-3xl border bg-card p-6 shadow-2xl">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Quick User Profile</p>
+                          <h3 className="mt-2 text-2xl font-black text-primary">{`${profileModalUser.firstName || 'Unknown'} ${profileModalUser.lastName || 'User'}`.trim()}</h3>
+                          <p className="text-sm text-muted-foreground">{profileModalUser.universityEmail || profileModalUser.email || profileModalUser._id}</p>
+                        </div>
+                        <button type="button" onClick={() => setProfileModalUser(null)} className="w-10 h-10 rounded-xl border bg-background flex items-center justify-center">
+                          <X size={16} />
+                        </button>
+                      </div>
+                      <div className="mt-5 grid grid-cols-2 gap-3">
+                        <div className="rounded-xl border p-4">
+                          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Role</p>
+                          <p className="mt-2 font-bold text-primary capitalize">{profileModalUser.role || 'student'}</p>
+                        </div>
+                        <div className="rounded-xl border p-4">
+                          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Status</p>
+                          <p className="mt-2 font-bold text-primary">{blockedIds.includes(profileModalUser._id) ? 'Blocked' : 'Active'}</p>
+                        </div>
+                      </div>
+                      <div className="mt-5 flex items-center gap-3 justify-end">
+                        <button type="button" onClick={() => setProfileModalUser(null)} className="px-4 py-2 rounded-xl border text-sm font-bold bg-background">Close</button>
+                        <button type="button" onClick={() => {
+                          handleBlockToggle(profileModalUser._id);
+                          setProfileModalUser(null);
+                        }} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-600 text-white">
+                          {blockedIds.includes(profileModalUser._id) ? 'Unblock User' : 'Block User'}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
